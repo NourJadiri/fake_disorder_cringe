@@ -3,3 +3,5 @@
 
 #.env
 .env
+./src/Llama-3.2-1B
+.llama-3.2-1B
