@@ -2,6 +2,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 from pymongo import MongoClient
+import pandas as pd
+import os
 
 def mongo_example_task():
     # MongoDB connection details
@@ -33,6 +35,17 @@ def mongo_example_task():
     except Exception as e:
         print(f"Failed to connect to MongoDB: {e}")
         raise
+    
+def test_csv_creation():
+    print('working_directory:', os.getcwd())
+    print('creating csv')
+    df = pd.DataFrame({
+        'A': [1, 2, 3],
+        'B': [4, 5, 6],
+        'C': [7, 8, 9]
+    })
+    df.to_csv('/opt/airflow/dags/error_logs/example.csv', index=False)
+    print('CSV file created!')
 
 # Define the DAG
 with DAG(
@@ -44,6 +57,6 @@ with DAG(
 
     # Create a PythonOperator
     mongo_task = PythonOperator(
-        task_id='test_mongo_connection',
-        python_callable=mongo_example_task
+        task_id='test_csv_creation',
+        python_callable=test_csv_creation
     )
