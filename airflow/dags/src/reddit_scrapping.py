@@ -121,7 +121,8 @@ def get_reddit_posts():
                     "subreddit": post.subreddit.display_name,
                     "created_at": post.created_utc,
                     "self_text": post.selftext, 
-                    "searchQuery":keyword,  
+                    "searchQuery":keyword,
+                    "augmented":0
                 })
             
     if(len(posts)==0):
