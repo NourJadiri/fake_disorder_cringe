@@ -35,7 +35,7 @@ augment_data_dag = DAG(
 #----------------------
 
 def augmentData():
-    return augment_documents(100)
+    return augment_documents(5)
 
 #----------------------
 #End of functions
