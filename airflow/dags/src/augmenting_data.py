@@ -59,8 +59,9 @@ def augment_documents(limit):
     if client is None:
         print("Error connecting to MongoDB")
         return False
-    db=client['reddit']
-    documents=get_documents(db, 'reddit_posts', limit)
+    db_ingestion=client['Ingestion_db']
+    db_staging=client['Staging_db']
+    documents=get_documents(db_ingestion, 'reddit_ingestion', limit)
     answer_nb=0
     error_nb=0
     total=0
@@ -78,7 +79,9 @@ def augment_documents(limit):
                 print(f"Error [answer] processing document with id: {id}")
                 answer_nb+=1
                 continue
-            db.reddit_posts.update_one({'id': id}, {'$set': response})
+            db_staging.reddit_llm.insert_one(document)
+            db_staging.reddit_llm.update_one({'id': id}, {'$set': response})
+            db_ingestion.reddit_ingestion.update_one({'id': id}, {'$set': {'staged': -1}})
             print(f"Updated document with id: {id}")
         except Exception as e:
             log_errors.append({'id': id,'text':response_mistrale, 'error': e})
@@ -133,7 +136,7 @@ def create_prompt(title, text):
 
 def get_documents(db, collection, limit=10):
     # Get the documents from the specified collection
-    documents = db[collection].find({'Sentiment': {'$exists': False}}, {'_id': 0}).limit(limit)
+    documents = db[collection].find({'staged': 1}, {'_id': 0}).limit(limit)
     return documents
 
 def augmented_json_data(text):
@@ -169,7 +172,8 @@ def augmented_json_data(text):
         "Mention of Solutions": response[3].split(':')[1].strip().split(' ')[0],
         "Gender": response[4].split(':')[1].strip().split(' ')[0],
         "Self-Diagnosis": response[5].split(':')[1].strip().split(' ')[0],
-        "Self-Medication": response[6].split(':')[1].strip().split(' ')[0]
+        "Self-Medication": response[6].split(':')[1].strip().split(' ')[0],
+        "augmented": 0
         }
     except Exception as e:
         print('second apprach to extract features')
@@ -185,7 +189,8 @@ def augmented_json_data(text):
         "Mention of Solutions": secondresponse[3].split(':')[1].strip().split(' ')[0],
         "Gender": secondresponse[4].split(':')[1].strip().split(' ')[0],
         "Self-Diagnosis": secondresponse[5].split(':')[1].strip().split(' ')[0],
-        "Self-Medication": secondresponse[6].split(':')[1].strip().split(' ')[0]
+        "Self-Medication": secondresponse[6].split(':')[1].strip().split(' ')[0],
+        "augmented": 0
         }
         
 

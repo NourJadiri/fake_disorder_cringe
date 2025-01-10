@@ -83,13 +83,12 @@ def get_reddit_posts():
     reddit=connect_to_reddit()
     r=connect_to_redis()
     client=connect_to_mongo()
-    db=client['reddit_test']
+    db=client['Ingestion_db']
     
     if(reddit==None or r==None or client==None):
         print("Connection failed!")
         return None
         
-    
     
     
     Querykeywords=["adhd", "diagnose","energy", "brain", "test", "distracted", "forgetful", "doctor"
@@ -122,13 +121,13 @@ def get_reddit_posts():
                     "created_at": post.created_utc,
                     "self_text": post.selftext, 
                     "searchQuery":keyword,
-                    "augmented":0
+                    "staged":0
                 })
             
     if(len(posts)==0):
         print("No new posts found!")
         return None
-    db.reddit_posts.insert_many(posts)
+    db.reddit_ingestion.insert_many(posts)
     print
     store_reddit_posts_locally(posts)
     print("Done!")
