@@ -18,3 +18,13 @@ class Author:
 
     def __repr__(self):
         return f"Author(id={self.author_id}, username={self.username}, age={self.age}, gender={self.gender}, country={self.country})"
+
+    def to_dict(self):
+        return {
+            "author_id": self.author_id,
+            "username": self.username,
+            "age": self.age,
+            "gener": self.gender,
+            "country": self.country,
+            "bio": self.bio
+        }

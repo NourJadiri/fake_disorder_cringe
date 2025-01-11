@@ -16,3 +16,11 @@ class Response:
 
     def __repr__(self):
         return f"Response(id={self.response_id}, author={self.author}, date_created={self.date_created})"
+
+    def to_dict(self):
+        return {
+            "response_id": self.response_id,
+            "author": self.author.username,
+            "body": self.body,
+            "date_created": self.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        }

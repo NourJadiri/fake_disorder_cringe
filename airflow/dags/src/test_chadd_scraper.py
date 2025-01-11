@@ -2,6 +2,7 @@
 import os
 from dotenv import load_dotenv
 
+from chadd.models.post import Post
 from chadd_scrap import ChaddScraper
 
 load_dotenv()
@@ -33,12 +34,30 @@ def test_get_posts_ids():
 def test_get_post_details():
     post_id = 151579120
     post = chadd_scraper.get_post_details(post_id)
-    assert isinstance(post, dict)
-    assert post.get('id') == post_id
+    assert isinstance(post, Post)
+    assert post.post_id == post_id
+
+
+def test_save_post_to_file():
+    post_id = 151579120
+    post = chadd_scraper.get_post_details(post_id)
+    chadd_scraper.save_post_to_file(post, filename=f"post_{post_id}.json")
+    assert os.path.exists(f"post_{post_id}.json")
+
+def test_save_posts_to_file():
+    post_ids = chadd_scraper.get_posts_ids(start_date='2020-01', end_date='2020-02', community='adult-adhd')
+    for post_id in post_ids:
+        post = chadd_scraper.get_post_details(post_id)
+        posts.append(post)
+    chadd_scraper.save_posts_to_file(posts, filename='posts.json')
+    assert os.path.exists('posts.json')
 
 # runnig the tests
 test_chadd_scraper_login()
 test_get_posts_ids()
 test_get_post_details()
+test_save_post_to_file()
+test_save_posts_to_file()
+
 
 

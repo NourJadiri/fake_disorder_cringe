@@ -4,6 +4,9 @@ import requests
 import json
 import os
 
+from chadd.models.post import Post
+
+
 class ChaddScraper:
     def __init__(self, email: str, password: str, base_url: str):
         """
@@ -167,7 +170,7 @@ class ChaddScraper:
 
         return posts_ids
 
-    def get_post_details(self, post_id, community = 'adult-adhd') -> dict:
+    def get_post_details(self, post_id, community = 'adult-adhd') -> Post:
         """
         Get the details of a post given its ID.
 
@@ -184,4 +187,27 @@ class ChaddScraper:
         if response.status_code != 200:
             raise Exception(f"Failed to fetch post details for post ID {post_id}")
 
-        return response.json()
+        post_object = response.json()
+        return Post.from_json(post_object)
+
+    @staticmethod
+    def save_post_to_file(post: Post, filename: str = "post.json") -> None:
+        """
+        Save a single post to a local JSON file.
+
+        :param post: The post to save
+        :param filename: The name of the JSON file where the post will be saved
+        """
+        with open(filename, "w") as f:
+            json.dump(post.to_dict(), f)
+
+    @staticmethod
+    def save_posts_to_file(posts: list[Post], filename: str = "posts.json") -> None:
+        """
+        Save the list of posts to a local JSON file.
+
+        :param posts: The list of posts to save
+        :param filename: The name of the JSON file where posts will be saved
+        """
+        with open(filename, "w") as f:
+            json.dump([post.to_dict() for post in posts], f)

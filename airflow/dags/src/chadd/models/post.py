@@ -66,3 +66,14 @@ class Post:
             total_responses=api_response.get("totalResponses", 0),
             responses=responses,
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "post_id": self.post_id,
+            "title": self.title,
+            "body": self.body,
+            "author": self.author.to_dict(),
+            "date_created": self.date_created.isoformat(),
+            "total_responses": self.total_responses,
+            "responses": [response.to_dict() for response in self.responses],
+        }
