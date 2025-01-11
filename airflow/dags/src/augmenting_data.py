@@ -9,10 +9,6 @@ import datetime
 import requests
 
 
-
-
-
-
 def test_mongo():
 
     try:
