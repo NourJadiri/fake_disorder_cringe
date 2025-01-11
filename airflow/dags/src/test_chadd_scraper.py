@@ -36,5 +36,9 @@ def test_get_post_details():
     assert isinstance(post, dict)
     assert post.get('id') == post_id
 
+# runnig the tests
+test_chadd_scraper_login()
+test_get_posts_ids()
+test_get_post_details()
 
 
