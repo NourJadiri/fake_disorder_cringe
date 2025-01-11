@@ -211,3 +211,5 @@ class ChaddScraper:
         """
         with open(filename, "w") as f:
             json.dump([post.to_dict() for post in posts], f)
+
+

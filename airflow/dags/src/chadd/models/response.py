@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from chadd.models.author import Author
+from chadd.models.user import User
 
 
 class Response:
     def __init__(self,
                  response_id: int,
-                 author: Author,
+                 author: User,
                  body: str,
                  date_created: datetime):
         self.response_id = response_id

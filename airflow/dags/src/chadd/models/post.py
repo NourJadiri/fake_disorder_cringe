@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from chadd.models.response import Response
-from chadd.models.author import Author
+from chadd.models.user import User
 
 
 class Post:
@@ -10,7 +10,7 @@ class Post:
                  post_id: int,
                  title: str,
                  body: str,
-                 author: Author,
+                 author: User,
                  date_created: datetime,
                  total_responses: int,
                  responses: Optional[List[Response]] = None):
@@ -28,8 +28,8 @@ class Post:
     @classmethod
     def from_json(cls, api_response: dict) -> 'Post':
         author_data = api_response.get("author", {})
-        author = Author(
-            author_id=author_data.get("id"),
+        author = User(
+            user_id=author_data.get("id"),
             username=author_data.get("username"),
             age=author_data.get("age"),
             gender=author_data.get("gender"),
@@ -40,8 +40,8 @@ class Post:
         responses = []
         for response_data in api_response.get("responses", []):
             response_author_data = response_data.get("author", {})
-            response_author = Author(
-                author_id=response_author_data.get("id"),
+            response_author = User(
+                user_id=response_author_data.get("id"),
                 username=response_author_data.get("username"),
                 age=None,  # Response authors might not have detailed demographics
                 gender=None,
