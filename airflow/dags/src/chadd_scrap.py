@@ -120,7 +120,7 @@ class ChaddScraper:
         else:
             print(f"No cookie file found at {filename}. Please log in first.")
 
-    def get_posts_ids(self, community, start_date, end_date) -> list:
+    def get_posts_ids(self, start_date = '2017-07', end_date = '2025-01', community = 'adult-adhd') -> list:
         """
         Get all the posts ids for a given community and a given range of years and months.
 
@@ -147,6 +147,8 @@ class ChaddScraper:
             year = current_date.year
             month = current_date.month
 
+            print(f"Fetching posts for {year}-{month}...")
+
             url = f"{base_url}year={year}&month={month}"
             response = self.session.get(url)
 
@@ -164,3 +166,22 @@ class ChaddScraper:
             current_date = next_month.replace(day=1)
 
         return posts_ids
+
+    def get_post_details(self, post_id, community = 'adult-adhd') -> dict:
+        """
+        Get the details of a post given its ID.
+
+        :param post_id: The ID of the post
+        :param community: The community of the post
+        :return: A dictionary containing the post details
+        """
+        if not self.huSessID:
+            raise Exception("Please log in first. Execute ChaddScraper.login() first.")
+
+        url = f"{self.base_url}/private/posts/{community}/{post_id}"
+        response = self.session.get(url)
+
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch post details for post ID {post_id}")
+
+        return response.json()

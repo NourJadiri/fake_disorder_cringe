@@ -2,6 +2,7 @@
 import os
 from dotenv import load_dotenv
 
+from chadd.models.post import Post
 from chadd_scrap import ChaddScraper
 
 load_dotenv()
@@ -16,4 +17,13 @@ chadd_scraper = ChaddScraper(
 )
 
 chadd_scraper.login()
+
+postIds = chadd_scraper.get_posts_ids(start_date='2020-01', end_date='2020-02', community='adult-adhd')
+
+posts = []
+
+for post_id in postIds:
+    post_details = chadd_scraper.get_post_details(post_id, community='adult-adhd')
+    new_post = Post.from_json(post_details)
+    print(new_post.title)
 
