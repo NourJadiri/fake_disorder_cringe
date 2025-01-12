@@ -14,6 +14,13 @@ class Condition:
     def __repr__(self):
         return f"Condition(name={self.name}, severity={self.severity}, treatments={self.treatments})"
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "severity": self.severity,
+            "treatments": self.treatments
+        }
+
     @classmethod
     def from_json(cls, api_response: dict) -> 'Condition':
         return cls(

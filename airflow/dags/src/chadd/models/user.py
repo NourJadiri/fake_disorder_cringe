@@ -44,7 +44,8 @@ class User:
             "author_id": self.user_id,
             "username": self.username,
             "age": self.age,
-            "gener": self.gender,
+            "gender": self.gender,
             "country": self.country,
-            "bio": self.bio
+            "bio": self.bio,
+            "conditions": [condition.to_dict() for condition in self.conditions]
         }
