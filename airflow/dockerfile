@@ -1,0 +1,5 @@
+# Start with the official Airflow image
+FROM apache/airflow:2.7.1
+
+# Install additional Python dependencies
+RUN pip install --no-cache-dir praw pymongo redis requests
