@@ -10,7 +10,7 @@ from src.chadd.models.post import Post
 
 
 class ChaddScraper:
-    def __init__(self, email: Optional[str], password: Optional[str], base_url = 'https://healthunlocked.com/'):
+    def __init__(self, email: Optional[str], password: Optional[str], base_url = 'https://healthunlocked.com'):
         """
         Initialize the scraper with user credentials and the base URL of the website.
 
