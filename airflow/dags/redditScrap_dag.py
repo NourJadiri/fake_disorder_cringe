@@ -37,10 +37,6 @@ redditScrap_dag = DAG(
 #----------------------
 
 
-
-
-
-
 task_one = PythonOperator(
     task_id='scrap_reddit',
     dag=redditScrap_dag,
@@ -64,12 +60,6 @@ task_two = PythonOperator(
     trigger_rule='all_success', 
     depends_on_past=False,
 )
-
-
-
-
-
-
 
 
 #----------------------

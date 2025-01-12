@@ -27,7 +27,7 @@ chadd_dag = DAG(
 
 #----------------------
 
-def decide_next_task(**kwargs):
+def branch_on_check_cookies(**kwargs):
     # Assuming check_cookie_file returns a boolean
     if kwargs['ti'].xcom_pull(task_ids='check_cookie'):
         return 'load_scraper_from_cookies'
@@ -36,7 +36,7 @@ def decide_next_task(**kwargs):
 
 def branch_on_mango_connection():
     if connect_to_mongo():
-        return 'check_cookie'
+        return 'clean_ingestion_db'
     else:
         return 'stop_task'
 
@@ -45,6 +45,12 @@ check_mongo_task = PythonOperator(
     task_id='check_mongo_task',
     dag=chadd_dag,
     python_callable=test_mongo,
+)
+
+clean_ingestion_db_task = PythonOperator(
+    task_id='clean_ingestion_db',
+    dag=chadd_dag,
+    python_callable=clean_ingestion_db_func,
 )
 
 # Branch task based on MongoDB connection
@@ -63,10 +69,10 @@ check_cookie_task = PythonOperator(
     depends_on_past=False,
 )
 
-branch_task = BranchPythonOperator(
-    task_id='branch_task',
+found_cookies = BranchPythonOperator(
+    task_id='found_cookies',
     dag=chadd_dag,
-    python_callable=decide_next_task,
+    python_callable=branch_on_check_cookies,
     provide_context=True,
 )
 
@@ -96,9 +102,9 @@ fetch_posts_task = PythonOperator(
 )
 
 # noinspection PyStatementEffect
-check_mongo_task >> branch_mongo_task >> [check_cookie_task, stop_task]
+check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
-check_cookie_task >> branch_task >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task
+clean_ingestion_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task
 
 # check if cookie file is available
 # if yes, start scraping
@@ -109,7 +115,7 @@ check_cookie_task >> branch_task >> [load_scraper_from_cookies, init_scraper_tas
 
 # test mongo connection
 
-# fetch post ids, store them in a file
+# fetch post ids, store them in a mongo collection
 
 # fetch post details, store them in a collection
 
