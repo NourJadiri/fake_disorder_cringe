@@ -4,6 +4,7 @@ import requests
 import json
 import os
 
+from chadd.models.user import User
 from chadd.models.post import Post
 
 
@@ -213,3 +214,22 @@ class ChaddScraper:
             json.dump([post.to_dict() for post in posts], f)
 
 
+    def get_user_details(self, username):
+        """
+        Get the details of a user given their username.
+
+        :param username: The username of the user
+        :return: A dictionary containing the user details
+        """
+        if not self.huSessID:
+            raise Exception("Please log in first. Execute ChaddScraper.login() first.")
+
+        url = f"{self.base_url}/private/user/profile/{username}"
+        response = self.session.get(url)
+
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch user details for username {username}")
+
+        user_object = response.json()
+        user = User.from_json(user_object)
+        return user

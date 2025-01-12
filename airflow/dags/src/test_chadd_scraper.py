@@ -52,12 +52,20 @@ def test_save_posts_to_file():
     chadd_scraper.save_posts_to_file(posts, filename='posts.json')
     assert os.path.exists('posts.json')
 
+def test_get_user_details():
+    username = 'Reformschooldropout'
+    user = chadd_scraper.get_user_details(username)
+    assert user is not None
+    assert user.username == username
+
 # runnig the tests
 test_chadd_scraper_login()
-test_get_posts_ids()
-test_get_post_details()
-test_save_post_to_file()
-test_save_posts_to_file()
+# test_get_posts_ids()
+# test_get_post_details()
+# test_save_post_to_file()
+# test_save_posts_to_file()
+test_get_user_details()
+
 
 
 
