@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime
-from typing import Optional
+from typing import Optional, List
 
 import requests
 import json
 import os
 
-from chadd.models.user import User
-from chadd.models.post import Post
+from src.chadd.models.user import User
+from src.chadd.models.post import Post
 
 
 class ChaddScraper:
@@ -221,7 +221,7 @@ class ChaddScraper:
             json.dump(post.to_dict(), f)
 
     @staticmethod
-    def save_posts_to_file(posts: list[Post], filename: str = "posts.json") -> None:
+    def save_posts_to_file(posts: List[Post], filename: str = "posts.json") -> None:
         """
         Save the list of posts to a local JSON file.
 
@@ -253,7 +253,7 @@ class ChaddScraper:
         return user
 
     @staticmethod
-    def save_users_to_file(users: list[User], filename: str = "users.json") -> None:
+    def save_users_to_file(users: List[User], filename: str = "users.json") -> None:
         """
         Save the list of users to a local JSON file.
 

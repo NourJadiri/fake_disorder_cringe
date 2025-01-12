@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from chadd.models.user import User
+from src.chadd.models.user import User
 
 
 class Response:

@@ -119,6 +119,8 @@ services:
       - .env
     networks:
       - airflow_network
+    environment:
+      - PYTHONPATH=/opt/airflow/dags
 
 
   airflow-scheduler:
@@ -141,6 +143,8 @@ services:
 
   airflow-worker:
     <<: *airflow-common
+    environment:
+      - PYTHONPATH=/opt/airflow/dags
     command: celery worker
     healthcheck:
       test:

@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Optional, List
 
-from chadd.models.response import Response
-from chadd.models.user import User
+from src.chadd.models.response import Response
+from src.chadd.models.user import User
 
 
 class Post:

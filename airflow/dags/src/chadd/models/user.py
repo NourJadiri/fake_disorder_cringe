@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import datetime
 
-from chadd.models.condition import Condition
+from src.chadd.models.condition import Condition
 
 
 class User:
