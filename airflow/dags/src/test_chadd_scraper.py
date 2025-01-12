@@ -67,6 +67,7 @@ def test_save_users_to_file():
 
 def test_get_members():
     members = chadd_scraper.get_members_for_page(1)
+    print(members)
     assert len(members) > 0
 
 # runnig the tests
