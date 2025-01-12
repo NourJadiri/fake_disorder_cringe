@@ -244,3 +244,72 @@ class ChaddScraper:
         """
         with open(filename, "w") as f:
             json.dump([user.to_dict() for user in users], f)
+
+    def get_members_for_page(self, page, community = 'adult-adhd'):
+        """
+        Get the members of a community for a given page.
+
+        :param page: The page number
+        :param community: The community for which we want to get the members
+        :return: A list of users
+        """
+        if not self.huSessID:
+            raise Exception("Please log in first. Execute ChaddScraper.login() first.")
+
+        limit = 12
+        members = []
+        base_url = f"{self.base_url}/private/members/{community}"
+
+        url = f"{base_url}?limit={limit * page}"
+        response = self.session.get(url)
+
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch members for page {page}")
+
+        try:
+            data = response.json()
+            # extract the username
+            members.extend(member['username'] for member in data['members'] if "username" in member)
+            print(f"Total members: {len(members)}")
+
+        except Exception as e:
+            print(f"Error processing response for page {page}: {e}")
+
+        return members
+
+    def get_all_members(self, community = 'adult-adhd'):
+        """
+        Get all the members of a community.
+
+        :param community: The community for which we want to get the members
+        :return: A list of users
+        """
+        if not self.huSessID:
+            raise Exception("Please log in first. Execute ChaddScraper.login() first.")
+
+        limit = 12
+        members = []
+        base_url = f"{self.base_url}/private/members/{community}"
+
+        total_members = self.session.get(base_url).json().get('total', 0)
+        total_pages = total_members // limit + 1
+
+        for page in range(1, total_pages + 1):
+            print(f"Fetching members for page {page}...")
+            url = f"{base_url}?limit={limit * page}"
+            response = self.session.get(url)
+
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch members for page {page}")
+
+            try:
+                data = response.json()
+                # extract the username
+                members.extend(member['username'] for member in data['members'] if "username" in member)
+                print(f"Total members: {len(members)}")
+
+            except Exception as e:
+                print(f"Error processing response for page {page}: {e}")
+
+        return members
+

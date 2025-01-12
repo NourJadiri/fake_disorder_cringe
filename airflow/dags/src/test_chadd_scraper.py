@@ -65,6 +65,9 @@ def test_save_users_to_file():
     chadd_scraper.save_users_to_file(users, filename='users.json')
     assert os.path.exists('users.json')
 
+def test_get_members():
+    members = chadd_scraper.get_members_for_page(1)
+    assert len(members) > 0
 
 # runnig the tests
 test_chadd_scraper_login()
@@ -74,6 +77,7 @@ test_chadd_scraper_login()
 # test_save_posts_to_file()
 #test_get_user_details()
 #test_save_users_to_file()
+test_get_members()
 
 
 

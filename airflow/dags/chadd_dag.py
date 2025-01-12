@@ -23,4 +23,21 @@ chadd_dag = DAG(
     catchup=False,
 )
 
+# check if cookie file is available
+# if yes, start scraping
+# if no, login and save cookies
+
+# We can pass the cookies as xcom variables
+# We can also pass the cookies as environment variables
+
+# test mongo connection
+
+# fetch post ids, store them in a file
+
+# fetch post details, store them in a collection
+
+# go fetch all the members of the community
+
+# fetch user details, store them in a collection
+
 
