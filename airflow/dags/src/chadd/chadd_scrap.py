@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from typing import Optional
 
 import requests
 import json
@@ -9,7 +10,7 @@ from chadd.models.post import Post
 
 
 class ChaddScraper:
-    def __init__(self, email: str, password: str, base_url: str):
+    def __init__(self, email: Optional[str], password: Optional[str], base_url = 'https://healthunlocked.com/'):
         """
         Initialize the scraper with user credentials and the base URL of the website.
 
@@ -25,11 +26,22 @@ class ChaddScraper:
         self.session = requests.Session()
 
         # We’ll store these cookie values as class attributes after login
-        self.AWSALB = None
-        self.AWSALBCORS = None
         self.huBv = None
         self.huLang = None
         self.huSessID = None
+
+    @classmethod
+    def from_cookies(cls, cookies: dict) -> 'ChaddScraper':
+        """
+        Initialize the scraper with cookies instead of credentials.
+
+        :param cookies: A dictionary containing the cookies to use
+        """
+        scraper = cls(email=None, password=None)
+        scraper.huBv = cookies.get("huBv", None)
+        scraper.huSessID = cookies.get("huSessID", None)
+        return scraper
+
 
     def login(self) -> None:
         """
@@ -102,27 +114,33 @@ class ChaddScraper:
         with open(filename, "w") as f:
             json.dump(cookies_data, f)
 
-    def load_cookies_from_file(self, filename: str = "cookies.json") -> None:
+    @classmethod
+    def from_config(cls, filename: str = "cookies.json") -> 'ChaddScraper':
         """
         (Optional) Load previously saved cookies from a local JSON file.
         This method can be handy if you want to avoid logging in again.
 
         :param filename: Name of the JSON file where cookies are stored
         """
+
+        scraper = cls(email=None, password=None)
         if os.path.exists(filename):
             with open(filename, "r") as f:
                 cookies_data = json.load(f)
 
             # Update the class attributes
-            self.huBv = cookies_data.get("huBv", None)
-            self.huSessID = cookies_data.get("huSessID", None)
+            scraper.huBv = cookies_data.get("huBv", None)
+            scraper.huSessID = cookies_data.get("huSessID", None)
 
             # Also update the session’s cookie jar for subsequent requests
             for name, value in cookies_data.items():
                 if value is not None:
-                    self.session.cookies.set(name, value)
+                    scraper.session.cookies.set(name, value)
+
         else:
             print(f"No cookie file found at {filename}. Please log in first.")
+
+        return scraper
 
     def get_posts_ids(self, start_date = '2017-07', end_date = '2025-01', community = 'adult-adhd') -> list:
         """

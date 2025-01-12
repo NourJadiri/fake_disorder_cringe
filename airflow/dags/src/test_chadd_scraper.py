@@ -1,10 +1,9 @@
 # load email and password from .env
-import datetime
 import os
 from dotenv import load_dotenv
 
 from chadd.models.post import Post
-from chadd_scrap import ChaddScraper
+from chadd.chadd_scrap import ChaddScraper
 
 load_dotenv()
 email = os.getenv('CHADD_USERNAME')
@@ -43,9 +42,9 @@ def test_save_cookies():
     assert os.path.exists('cookies-test.json')
 
 def test_load_cookies_from_file():
-    chadd_scraper.load_cookies_from_file(filename=f'cookies-test.json')
-    assert chadd_scraper.huSessID is not None
-    assert chadd_scraper.huBv is not None
+    scraper = ChaddScraper.from_config(filename=f'cookies-test.json')
+    assert scraper.huSessID is not None
+    assert scraper.huBv is not None
 
 
 def test_save_post_to_file():
@@ -88,9 +87,9 @@ def test_get_members():
 # test_get_post_details()
 # test_save_post_to_file()
 # test_save_posts_to_file()
-#test_get_user_details()
-#test_save_users_to_file()
-#test_get_members()
+# test_get_user_details()
+# test_save_users_to_file()
+# test_get_members()
 
 
 
