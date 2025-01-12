@@ -7,6 +7,7 @@ from airflow.operators.python_operator import PythonOperator, BranchPythonOperat
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
 
+from src.chadd_scraping import init_chadd_scraper
 from src.chadd_scraping import check_cookie_file
 from src.reddit_scrapping import connect_to_mongo, connect_to_redis, connect_to_reddit, get_reddit_posts,test_connections,test_redis,test_mongo
 import os
@@ -34,6 +35,33 @@ check_cookie_task = PythonOperator(
     trigger_rule='all_success',
     depends_on_past=False,
 )
+
+def decide_next_task(**kwargs):
+    # Assuming check_cookie_file returns a boolean
+    if kwargs['ti'].xcom_pull(task_ids='check_cookie'):
+        return 'start_scraping_task'
+    else:
+        return 'init_scraper_task'
+
+branch_task = BranchPythonOperator(
+    task_id='branch_task',
+    dag=chadd_dag,
+    python_callable=decide_next_task,
+    provide_context=True,
+)
+
+start_scraping_task = DummyOperator(
+    task_id='start_scraping_task',
+    dag=chadd_dag,
+)
+
+init_scraper_task = PythonOperator(
+    task_id='init_scraper_task',
+    dag=chadd_dag,
+    python_callable=init_chadd_scraper,  # Define this function
+)
+
+check_cookie_task >> branch_task >> [start_scraping_task, init_scraper_task]
 
 # check if cookie file is available
 # if yes, start scraping
