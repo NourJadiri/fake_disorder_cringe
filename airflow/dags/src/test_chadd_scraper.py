@@ -1,4 +1,5 @@
 # load email and password from .env
+import datetime
 import os
 from dotenv import load_dotenv
 
@@ -37,6 +38,15 @@ def test_get_post_details():
     assert isinstance(post, Post)
     assert post.post_id == post_id
 
+def test_save_cookies():
+    chadd_scraper.save_cookies_to_file(filename=f'cookies-test.json')
+    assert os.path.exists('cookies-test.json')
+
+def test_load_cookies_from_file():
+    chadd_scraper.load_cookies_from_file(filename=f'cookies-test.json')
+    assert chadd_scraper.huSessID is not None
+    assert chadd_scraper.huBv is not None
+
 
 def test_save_post_to_file():
     post_id = 151579120
@@ -71,14 +81,16 @@ def test_get_members():
     assert len(members) > 0
 
 # runnig the tests
-test_chadd_scraper_login()
+# test_chadd_scraper_login()
+# test_save_cookies()
+# test_load_cookies_from_file()
 # test_get_posts_ids()
 # test_get_post_details()
 # test_save_post_to_file()
 # test_save_posts_to_file()
 #test_get_user_details()
 #test_save_users_to_file()
-test_get_members()
+#test_get_members()
 
 
 
