@@ -233,3 +233,14 @@ class ChaddScraper:
         user_object = response.json()
         user = User.from_json(user_object)
         return user
+
+    @staticmethod
+    def save_users_to_file(users: list[User], filename: str = "users.json") -> None:
+        """
+        Save the list of users to a local JSON file.
+
+        :param users: The list of users to save
+        :param filename: The name of the JSON file where users will be saved
+        """
+        with open(filename, "w") as f:
+            json.dump([user.to_dict() for user in users], f)
