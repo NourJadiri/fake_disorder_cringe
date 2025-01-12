@@ -27,12 +27,18 @@ def init_chadd_scraper(**context):
     scraper.login()
     scraper.save_cookies_to_file(filename=CONFIG_FILE)
 
-    # Load the cookies from the file to push into XCom
-    with open(CONFIG_FILE, "r") as file:
-        cookies_data = json.load(file)
+    print("Cookies saved!")
 
-    # Push cookies into XCom
-    context['ti'].xcom_push(key="chadd_cookies", value=cookies_data)
+def load_scraper_from_cookies(**context):
+    # load the cookies from the file
+    scraper = ChaddScraper.from_config(CONFIG_FILE)
+    print("Scraper loaded from cookies!")
 
-    print("Cookies saved and pushed to XCom!")
 
+def fetch_posts_task(**context):
+    # Get the cookies from XCom
+    scraper = ChaddScraper.from_config(CONFIG_FILE)
+
+    # Fetch posts
+    posts = scraper.get_posts_ids(start_date='2021-01', end_date='2021-02', community='adult-adhd')
+    print(posts)

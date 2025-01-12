@@ -7,8 +7,7 @@ from airflow.operators.python_operator import PythonOperator, BranchPythonOperat
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
 
-from src.chadd_scraping import init_chadd_scraper
-from src.chadd_scraping import check_cookie_file
+from src.chadd_scraping import *
 from src.reddit_scrapping import connect_to_mongo, connect_to_redis, connect_to_reddit, get_reddit_posts,test_connections,test_redis,test_mongo
 import os
 
@@ -28,6 +27,34 @@ chadd_dag = DAG(
 
 #----------------------
 
+def decide_next_task(**kwargs):
+    # Assuming check_cookie_file returns a boolean
+    if kwargs['ti'].xcom_pull(task_ids='check_cookie'):
+        return 'load_scraper_from_cookies'
+    else:
+        return 'init_scraper_task'
+
+def branch_on_mango_connection():
+    if connect_to_mongo():
+        return 'check_cookie'
+    else:
+        return 'stop_task'
+
+# Task to check MongoDB connection
+check_mongo_task = PythonOperator(
+    task_id='check_mongo_task',
+    dag=chadd_dag,
+    python_callable=test_mongo,
+)
+
+# Branch task based on MongoDB connection
+branch_mongo_task = BranchPythonOperator(
+    task_id='branch_mongo_task',
+    dag=chadd_dag,
+    python_callable=branch_on_mango_connection,
+    provide_context=True,
+)
+
 check_cookie_task = PythonOperator(
     task_id='check_cookie',
     dag=chadd_dag,
@@ -36,13 +63,6 @@ check_cookie_task = PythonOperator(
     depends_on_past=False,
 )
 
-def decide_next_task(**kwargs):
-    # Assuming check_cookie_file returns a boolean
-    if kwargs['ti'].xcom_pull(task_ids='check_cookie'):
-        return 'start_scraping_task'
-    else:
-        return 'init_scraper_task'
-
 branch_task = BranchPythonOperator(
     task_id='branch_task',
     dag=chadd_dag,
@@ -50,9 +70,10 @@ branch_task = BranchPythonOperator(
     provide_context=True,
 )
 
-start_scraping_task = DummyOperator(
-    task_id='start_scraping_task',
+load_scraper_from_cookies = PythonOperator(
+    task_id='load_scraper_from_cookies',
     dag=chadd_dag,
+    python_callable=load_scraper_from_cookies,
 )
 
 init_scraper_task = PythonOperator(
@@ -61,7 +82,23 @@ init_scraper_task = PythonOperator(
     python_callable=init_chadd_scraper,  # Define this function
 )
 
-check_cookie_task >> branch_task >> [start_scraping_task, init_scraper_task]
+# Stop task if MongoDB connection fails
+stop_task = DummyOperator(
+    task_id='stop_task',
+    dag=chadd_dag,
+)
+
+fetch_posts_task = PythonOperator(
+    task_id='fetch_posts_task',
+    dag=chadd_dag,
+    python_callable=fetch_posts_task,
+    trigger_rule='none_failed_min_one_success',
+)
+
+# noinspection PyStatementEffect
+check_mongo_task >> branch_mongo_task >> [check_cookie_task, stop_task]
+# noinspection PyStatementEffect
+check_cookie_task >> branch_task >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task
 
 # check if cookie file is available
 # if yes, start scraping

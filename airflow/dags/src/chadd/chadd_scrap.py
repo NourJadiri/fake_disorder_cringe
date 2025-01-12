@@ -113,6 +113,8 @@ class ChaddScraper:
 
         with open(filename, "w") as f:
             json.dump(cookies_data, f)
+            # print full path to the file
+            print(f"Cookies saved to {os.path.abspath(filename)}")
 
     @classmethod
     def from_config(cls, filename: str = "cookies.json") -> 'ChaddScraper':
@@ -158,8 +160,13 @@ class ChaddScraper:
         posts_ids = []
         base_url = f"{self.base_url}/private/posts/{community}/latest?"
 
+        # If date formats are not respected, raise an exception
+        if len(start_date) != 7 or len(end_date) != 7:
+            raise Exception("Date format must be YYYY-MM.")
+
         start_date = datetime.strptime(start_date, "%Y-%m")
         end_date = datetime.strptime(end_date, "%Y-%m")
+
 
         if start_date > end_date:
             raise Exception("Start date must be before end date.")
