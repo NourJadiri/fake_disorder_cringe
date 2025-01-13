@@ -1,8 +1,13 @@
 import json
 import os
+from typing import List
 
+import requests
 from dotenv import load_dotenv
 from airflow.models import Variable
+from ollama import chat, ChatResponse, Client
+
+from pymongo import MongoClient, UpdateOne
 
 from src.chadd.chadd_scrap import ChaddScraper
 
@@ -35,6 +40,10 @@ def clean_ingestion_db_func(**context):
     # Clean the ingestion database
     clean_ingestion_db()
     prepare_ingestion_db()
+
+def clean_staging_db_func(**context):
+    # Clean the staging database
+    clean_staging_db()
 
 def load_scraper_from_cookies(**context):
     # load the cookies from the file
@@ -93,5 +102,105 @@ def fetch_members_details(**context):
 
     insert_members_details(members)
 
+def infer_gender_from_bio(**context) -> str:
+    """
+    Infers the gender of members from their bio using the Mistral Completion API.
+    Updates the MongoDB documents with the inferred gender.
+
+    Returns:
+        str: Summary of the operation.
+    """
+    # Initialize MongoDB client
+    try:
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_staging_db']
+        members_collection = db['members']
+        print("Connected to MongoDB successfully.")
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        return "Failed to connect to MongoDB."
+
+    # Initialize Mistral client
+    try:
+        # Test if ollama is running
+        # send a request to ollama:11434
+        # if it returns 200, then it is running
+        req = requests.get('http://ollama:11434')
+        client = Client(
+            host='http://ollama:11434',
+            headers={'x-some-header': 'some-value'}
+        )
+        print("Initialized llama client successfully.")
+    except Exception as e:
+        raise ValueError(f"Error initializing Llama client: {e}")
+
+    # Define the query to find documents with gender set to null or empty
+    query = {'gender': {'$in': [None, "", "unknown"]}}
+    projection = {"bio": 1}  # Only retrieve the bio field
+
+    try:
+        documents = list(members_collection.find(query, projection))
+        print(f"Found {len(documents)} documents with gender set to null or unknown.")
+    except Exception as e:
+        print(f"Error fetching documents from MongoDB: {e}")
+        return "Failed to fetch documents."
+
+    if not documents:
+        return "No documents to update."
+
+    # Prepare bulk operations
+    bulk_operations: List[UpdateOne] = []
+
+    for doc in documents:
+        bio = doc.get("bio")
+        bio = bio.strip() if bio else ""
+        member_id = doc.get("_id")
+
+        if not bio:
+            inferred_gender = "unknown"
+            print(f"Document ID {member_id} has empty bio. Setting gender to 'unknown'.")
+        else:
+            try:
+                response: ChatResponse = client.chat(
+                    model='genderizer',
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": bio
+                        }
+                    ]
+                )
+
+                inferred_gender = response.message.content
+
+                if inferred_gender not in ["male", "female", "unknown"]:
+                    print(f"Unexpected response for Document ID {member_id}: '{inferred_gender}'. Setting to 'unknown'.")
+                    inferred_gender = "unknown"
+                else:
+                    print(f"Inferred gender for Document ID {member_id}: {inferred_gender}.")
+            except Exception as e:
+                print(f"Error calling Ollama for Document ID {member_id}: {e}. Setting gender to 'unknown'.")
+                inferred_gender = "unknown"
+
+        # Prepare the update operation
+        bulk_operations.append(
+            UpdateOne(
+                {"_id": member_id},
+                {"$set": {"gender": inferred_gender}}
+            )
+        )
+
+    # Execute bulk updates
+    try:
+        if bulk_operations:
+            result = members_collection.bulk_write(bulk_operations)
+            print(f"Bulk update completed. Matched: {result.matched_count}, Modified: {result.modified_count}.")
+            return f"Bulk update completed. Matched: {result.matched_count}, Modified: {result.modified_count}."
+        else:
+            print("No update operations to perform.")
+            return "No updates performed."
+    except Exception as e:
+        print(f"Error performing bulk update: {e}")
+        return "Bulk update failed."
 
 

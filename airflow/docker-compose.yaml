@@ -258,9 +258,24 @@ services:
     networks:
       - airflow_network
     depends_on:
-      - mongo  
-
-
+      - mongo
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434" # Default port for Ollama
+    volumes:
+      - ollama_data:/root/.ollama # Persist Ollama data (models, settings)
+      - ./ollama_entrypoint.sh:/entrypoint.sh
+      - ./Modelfile:/Modelfile
+    restart: always
+    pull_policy: always
+    tty: true
+    environment:
+      - OLLAMA_MODEL
+    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
+    networks:
+      - airflow_network
 
 networks:
   airflow_network:
@@ -270,6 +285,7 @@ networks:
 
 volumes:
   postgres-db-volume:
+  ollama_data:
   MONGO_DATA:
     name: MONGO_DATA
   

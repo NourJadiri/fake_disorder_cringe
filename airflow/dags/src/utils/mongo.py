@@ -23,6 +23,12 @@ def clean_ingestion_db():
     db.drop_collection('members')
     print("Collections dropped successfully!")
 
+def clean_staging_db():
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_staging_db']
+    db.drop_collection('posts')
+    db.drop_collection('members')
+    print("Collections dropped successfully!")
 
 def prepare_ingestion_db():
     client = MongoClient('mongo', 27017)

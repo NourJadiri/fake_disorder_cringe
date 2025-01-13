@@ -53,6 +53,12 @@ clean_ingestion_db_task = PythonOperator(
     python_callable=clean_ingestion_db_func,
 )
 
+clean_staging_db_task = PythonOperator(
+    task_id='clean_staging_db',
+    dag=chadd_dag,
+    python_callable=clean_staging_db_func,
+)
+
 # Branch task based on MongoDB connection
 branch_mongo_task = BranchPythonOperator(
     task_id='branch_mongo_task',
@@ -120,12 +126,18 @@ fill_members_collection_task = PythonOperator(
     python_callable=fetch_members_details,
 )
 
+infer_gender_task = PythonOperator(
+    task_id='infer_gender_task',
+    dag=chadd_dag,
+    python_callable=infer_gender_from_bio,
+)
+
 # noinspection PyStatementEffect
 check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
-clean_ingestion_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
+clean_ingestion_db_task >> clean_staging_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
 # noinspection PyStatementEffect
-fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task
+fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task
 
 # check if cookie file is available
 # if yes, start scraping
