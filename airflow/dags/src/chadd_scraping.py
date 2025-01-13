@@ -203,4 +203,36 @@ def infer_gender_from_bio(**context) -> str:
         print(f"Error performing bulk update: {e}")
         return "Bulk update failed."
 
+def homogenize_gender(**context) -> None:
+    try:
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_staging_db']
+        members_collection = db['members']
+        print("Connected to MongoDB successfully.")
+    except Exception as e:
+        raise ValueError(f"Error connecting to MongoDB: {e}")
+
+    try:
+        # Update "woman" to "female"
+        result_woman = members_collection.update_many(
+            {"gender": "woman"},
+            {"$set": {"gender": "female"}}
+        )
+        print(f"Updated {result_woman.modified_count} documents from 'woman' to 'female'.")
+
+        # Update "man" to "male"
+        result_man = members_collection.update_many(
+            {"gender": "man"},
+            {"$set": {"gender": "male"}}
+        )
+        print(f"Updated {result_man.modified_count} documents from 'man' to 'male'.")
+
+        # Update all genders not "unknown" to "other"
+        result_other = members_collection.update_many(
+            {"gender": {"$nin": ["unknown", "male", "female"]}},
+            {"$set": {"gender": "other"}}
+        )
+        print(f"Updated {result_other.modified_count} documents to 'other'.")
+    except Exception as e:
+        raise ValueError(f"Error updating documents: {e}")
 
