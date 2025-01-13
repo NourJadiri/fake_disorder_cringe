@@ -6,7 +6,7 @@ from airflow.models import Variable
 
 from src.chadd.chadd_scrap import ChaddScraper
 
-from src.utils.mongo import prepare_ingestion_db, insert_post_ids, clean_ingestion_db, insert_members
+from src.utils.mongo import *
 
 BASE_URL = 'https://healthunlocked.com'
 CONFIG_FILE = 'cookies.json'
@@ -58,5 +58,40 @@ def fetch_members(**context):
     members = scraper.get_all_members(community='adult-adhd')
     insert_members(members)
     print(members)
+
+
+def fetch_post_details(**context):
+    # delete the cookie file
+    os.remove(CONFIG_FILE)
+
+    init_chadd_scraper()
+    scraper = ChaddScraper.from_config(CONFIG_FILE)
+
+    # Fetch post details
+    post_ids = get_post_ids()
+    posts = []
+    for post_id in post_ids:
+        post = scraper.get_post_details(post_id)
+        posts.append(post)
+
+    insert_post_details(posts)
+
+def fetch_members_details(**context):
+    # delete the cookie file
+    os.remove(CONFIG_FILE)
+
+    init_chadd_scraper()
+    scraper = ChaddScraper.from_config(CONFIG_FILE)
+
+    # Fetch post details
+    usernames = get_members_usernames()
+    members = []
+    for username in usernames:
+        print('Fetching details for:', username)
+        member = scraper.get_user_details(username)
+        members.append(member)
+
+    insert_members_details(members)
+
 
 

@@ -58,3 +58,51 @@ def insert_members(members):
     # Use insert_many for bulk insertion
     member_collection.insert_many(member_docs)
     print("Members inserted successfully!")
+
+def get_post_ids():
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_ingestion_db']
+    post_collection = db['posts']
+
+    # Get the post_ids in batches
+    post_ids = []
+    for post in post_collection.find():
+        post_ids.append(post['post_id'])
+
+    return post_ids
+
+def get_members_usernames():
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_ingestion_db']
+    member_collection = db['members']
+
+    # Get the usernames in batches
+    usernames = []
+    for member in member_collection.find():
+        usernames.append(member['username'])
+
+    return usernames
+
+def insert_post_details(posts):
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_staging_db']
+    post_collection = db['posts']
+
+    # Prepare the documents for bulk insertion
+    post_docs = [post.to_dict() for post in posts]
+
+    # Use insert_many for bulk insertion
+    post_collection.insert_many(post_docs)
+    print("Post details inserted successfully!")
+
+def insert_members_details(members):
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_staging_db']
+    member_collection = db['members']
+
+    # Prepare the documents for bulk insertion
+    member_docs = [member.to_dict() for member in members]
+
+    # Use insert_many for bulk insertion
+    member_collection.insert_many(member_docs)
+    print("Member details inserted successfully!")

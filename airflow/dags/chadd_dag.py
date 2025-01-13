@@ -107,10 +107,25 @@ fetch_members_task = PythonOperator(
     python_callable=fetch_members,
 )
 
+fill_posts_collection_task = PythonOperator(
+    task_id='fill_posts_collection_task',
+    dag=chadd_dag,
+    python_callable=fetch_post_details,
+)
+
+
+fill_members_collection_task = PythonOperator(
+    task_id='fill_members_collection_task',
+    dag=chadd_dag,
+    python_callable=fetch_members_details,
+)
+
 # noinspection PyStatementEffect
 check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
 clean_ingestion_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
+# noinspection PyStatementEffect
+fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task
 
 # check if cookie file is available
 # if yes, start scraping

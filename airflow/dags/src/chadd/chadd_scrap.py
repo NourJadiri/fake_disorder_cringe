@@ -332,3 +332,13 @@ class ChaddScraper:
             print(f"Error processing response from {url}: {e}")
             return []
 
+
+    def reset(self):
+        """
+        Reset the scraper by clearing the stored cookies and session data.
+        """
+        self.huBv = None
+        self.huLang = None
+        self.huSessID = None
+        self.session.cookies.clear()
+        print("Scraper reset successfully!")
