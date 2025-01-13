@@ -66,6 +66,7 @@ def augment_documents(limit):
     error_nb=0
     total=0
     for document in documents:
+        del document['staged']
         response_mistrale=None
         total+=1
         id=document['id']
@@ -81,14 +82,18 @@ def augment_documents(limit):
                 continue
             db_staging.reddit_llm.insert_one(document)
             db_staging.reddit_llm.update_one({'id': id}, {'$set': response})
-            db_ingestion.reddit_ingestion.update_one({'id': id}, {'$set': {'staged': -1}})
+            db_ingestion.reddit_ingestion.update_one({'id': id}, {'$set': {'staged': 1}})
             print(f"Updated document with id: {id}")
         except Exception as e:
             log_errors.append({'id': id,'text':response_mistrale, 'error': e})
             print(f"Error processing document with id: {id}")
             print(e)
             error_nb+=1
-        
+    
+    if total==0:
+        print("No documents to process")
+        return False
+    
     print(f"error recorded: {error_nb}/{total}= {(error_nb/total)*100}")
     print(f"error answer recorded: {answer_nb}/{total}= {(answer_nb/total)*100}")
     df=pd.DataFrame(log_errors)
@@ -136,7 +141,7 @@ def create_prompt(title, text):
 
 def get_documents(db, collection, limit=10):
     # Get the documents from the specified collection
-    documents = db[collection].find({'staged': 1}, {'_id': 0}).limit(limit)
+    documents = db[collection].find({'staged': 0}, {'_id': 0}).limit(limit)
     return documents
 
 def augmented_json_data(text):

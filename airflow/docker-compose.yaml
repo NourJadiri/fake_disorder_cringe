@@ -100,6 +100,8 @@ services:
       interval: 5s
       timeout: 30s
       retries: 50
+    volumes:
+      - redis-db:/data
     restart: no
     networks:
       - airflow_network
@@ -272,4 +274,6 @@ volumes:
   postgres-db-volume:
   MONGO_DATA:
     name: MONGO_DATA
+  redis-db:
+    name: redis-db
   
