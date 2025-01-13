@@ -269,7 +269,8 @@ services:
     volumes:
       - ollama_data:/root/.ollama # Persist Ollama data (models, settings)
       - ./ollama_entrypoint.sh:/entrypoint.sh
-      - ./Modelfile:/Modelfile
+      - ./genderizer-modelfile:/genderizer-modelfile
+      - ./sentimentizer-modelfile:/sentimentizer-modelfile
     restart: always
     pull_policy: always
     tty: true

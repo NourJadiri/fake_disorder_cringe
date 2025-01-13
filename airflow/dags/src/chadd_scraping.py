@@ -4,7 +4,6 @@ from typing import List
 
 import requests
 from dotenv import load_dotenv
-from airflow.models import Variable
 from ollama import chat, ChatResponse, Client
 
 from pymongo import MongoClient, UpdateOne
@@ -236,3 +235,80 @@ def homogenize_gender(**context) -> None:
     except Exception as e:
         raise ValueError(f"Error updating documents: {e}")
 
+def analyze_sentiment(**context):
+    try:
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_staging_db']
+        post_collection = db['posts']
+        print("Connected to MongoDB successfully.")
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        return "Failed to connect to MongoDB."
+
+    # Initialize Mistral client
+    try:
+        # Test if ollama is running
+        # send a request to ollama:11434
+        # if it returns 200, then it is running
+        req = requests.get('http://ollama:11434')
+        client = Client(
+            host='http://ollama:11434',
+        )
+        print("Initialized llama client successfully.")
+    except Exception as e:
+        raise ValueError(f"Error initializing Llama client: {e}")
+
+        # Prepare bulk operations
+    bulk_operations: List[UpdateOne] = []
+    documents = list(post_collection.find())
+    for doc in documents:
+        body = doc.get("body")
+        body = body.strip() if body else ""
+        post_id = doc.get("_id")
+
+        if not body:
+            inferred_sentiment = "neutral"
+            print(f"Document ID {post_id} has empty content. Setting sentiment to 'neutral'.")
+        else:
+            try:
+                response = client.chat(
+                    model='sentimentizer',  # Replace with your actual sentiment model name
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": body
+                        }
+                    ]
+                )
+
+                inferred_sentiment = response.message.content.strip().lower()
+
+                if inferred_sentiment not in ["positive", "negative", "neutral"]:
+                    print(f"Unexpected response for Document ID {post_id}: '{inferred_sentiment}'. Setting to 'neutral'.")
+                    inferred_sentiment = "neutral"
+                else:
+                    print(f"Inferred sentiment for Document ID {post_id}: {inferred_sentiment}.")
+            except Exception as e:
+                print(f"Error calling Ollama for Document ID {post_id}: {e}. Setting sentiment to 'neutral'.")
+                inferred_sentiment = "neutral"
+
+        # Prepare the update operation
+        bulk_operations.append(
+            UpdateOne(
+                {"_id": post_id},
+                {"$set": {"sentiment": inferred_sentiment}}
+            )
+        )
+
+    # Execute bulk updates
+    try:
+        if bulk_operations:
+            result = post_collection.bulk_write(bulk_operations)
+            print(f"Bulk update completed. Matched: {result.matched_count}, Modified: {result.modified_count}.")
+            return f"Bulk update completed. Matched: {result.matched_count}, Modified: {result.modified_count}."
+        else:
+            print("No update operations to perform.")
+            return "No updates performed."
+    except Exception as e:
+        print(f"Error performing bulk update: {e}")
+        return "Bulk update failed."

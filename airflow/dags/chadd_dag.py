@@ -138,30 +138,22 @@ homogenize_gender_task = PythonOperator(
     python_callable = homogenize_gender,
 )
 
+analyze_sentiment_task = PythonOperator(
+    task_id = 'analyze_sentiment_task',
+    dag = chadd_dag,
+    python_callable = analyze_sentiment,
+)
+
 # noinspection PyStatementEffect
 check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
 clean_ingestion_db_task >> clean_staging_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
 # noinspection PyStatementEffect
-fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task >> homogenize_gender_task
+fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task >> homogenize_gender_task >> analyze_sentiment_task
 
-# check if cookie file is available
-# if yes, start scraping
-# if no, login and save cookies
+# sentiment analysis from the posts
 
-# We can pass the cookies as xcom variables
-# We can also pass the cookies as environment variables
-
-# test mongo connection
-
-# fetch post ids, store them in a mongo collection
-
-# fetch post details, store them in a collection
-
-# go fetch all the members of the community
-
-# fetch user details, store them in a collection
-
+# fields to keep : Mention of Solutions, Personal_Experience, Self-Diagnosis, Self-Medication, Sentiment, Topic
 # enjoy the data
 
 
