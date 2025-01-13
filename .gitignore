@@ -2,6 +2,7 @@
 .venv/
 
 # Environment files
+.env
 airflow/.env
 
 # Llama directory and its contents

@@ -6,6 +6,9 @@ from pymongo import MongoClient
 import pandas as pd
 import datetime
 
+
+
+
 def get_month(datetime):
     return datetime.month
 
