@@ -281,9 +281,9 @@ class ChaddScraper:
         if not self.huSessID:
             raise Exception("Please log in first. Execute ChaddScraper.login() first.")
 
-        limit = 12
+        start = 12
         base_url = f"{self.base_url}/private/members/{community}"
-        url = f"{base_url}?limit={limit * page}"
+        url = f"{base_url}?start={start * page}"
 
         print(f"Fetching members for page {page}...")
         return self._fetch_members_for_page(url)
@@ -299,16 +299,14 @@ class ChaddScraper:
         if not self.huSessID:
             raise Exception("Please log in first. Execute ChaddScraper.login() first.")
 
-        limit = 12
+        start = 12
         base_url = f"{self.base_url}/private/members/{community}"
 
         # Fetch total number of members
-        total_members = self.session.get(base_url).json().get('total', 0)
-        total_pages = total_members // limit + (1 if total_members % limit != 0 else 0)
 
         members = []
-        for page in range(1, total_pages + 1):
-            url = f"{base_url}?limit={limit * page}"
+        for page in range(0, 9980, 12):
+            url = f"{base_url}?start={page}"
             members.extend(self._fetch_members_for_page(url))
 
         print(f"Total members fetched: {len(members)}")

@@ -6,7 +6,7 @@ from airflow.models import Variable
 
 from src.chadd.chadd_scrap import ChaddScraper
 
-from src.utils.mongo import prepare_ingestion_db, insert_post_ids, clean_ingestion_db
+from src.utils.mongo import prepare_ingestion_db, insert_post_ids, clean_ingestion_db, insert_members
 
 BASE_URL = 'https://healthunlocked.com'
 CONFIG_FILE = 'cookies.json'
@@ -34,6 +34,7 @@ def init_chadd_scraper(**context):
 def clean_ingestion_db_func(**context):
     # Clean the ingestion database
     clean_ingestion_db()
+    prepare_ingestion_db()
 
 def load_scraper_from_cookies(**context):
     # load the cookies from the file
@@ -47,5 +48,15 @@ def fetch_posts_task(**context):
 
     # Fetch posts
     post_ids = scraper.get_posts_ids(start_date='2021-01', end_date='2021-02', community='adult-adhd')
-    prepare_ingestion_db()
     insert_post_ids(post_ids)
+
+def fetch_members(**context):
+    # Get the cookies from XCom
+    scraper = ChaddScraper.from_config(CONFIG_FILE)
+
+    # Fetch members
+    members = scraper.get_all_members(community='adult-adhd')
+    insert_members(members)
+    print(members)
+
+

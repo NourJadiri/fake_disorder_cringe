@@ -32,7 +32,6 @@ def prepare_ingestion_db():
 
     # Create a unique index on the post_id field
     post_collection.create_index('post_id', unique=True)
-    member_collection.create_index('member_id', unique=True)
 
     return post_collection
 
@@ -40,6 +39,22 @@ def insert_post_ids(post_ids):
     client = MongoClient('mongo', 27017)
     db = client['chadd_ingestion_db']
     post_collection = db['posts']
-    for post_id in post_ids:
-        post_collection.insert_one({'post_id': post_id})
+
+    # Prepare the documents for bulk insertion
+    post_docs = [{'post_id': post_id} for post_id in post_ids]
+
+    # Use insert_many for bulk insertion
+    post_collection.insert_many(post_docs)
     print("Post IDs inserted successfully!")
+
+def insert_members(members):
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_ingestion_db']
+    member_collection = db['members']
+
+    # Prepare the documents for bulk insertion
+    member_docs = [{'username': member} for member in members]
+
+    # Use insert_many for bulk insertion
+    member_collection.insert_many(member_docs)
+    print("Members inserted successfully!")
