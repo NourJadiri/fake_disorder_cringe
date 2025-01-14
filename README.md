@@ -100,9 +100,10 @@ cd airflow
 docker-compose up
 ```
 ### 4. Populate the databases for the offline use
-We will just run some scripts in order to populate the databases (Make sure the docker containers and running !!!)
+In order to populate the databases for offline testing, make sure to run the migration-mongo.sh migration script from the host machine (Make sure the mongo container is running !!!)
 
 ```bash
+cd dags/migration/mongo/
 #migration of mongodb
 sh dags/migration/mongo/migration_mongo.sh
 #migration of redis
