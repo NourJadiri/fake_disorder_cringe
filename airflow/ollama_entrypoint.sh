@@ -18,5 +18,8 @@ echo "🟢 Created genderizer model!"
 ollama create sentimentizer -f ./sentimentizer-modelfile
 echo "🟢 Created sentimentizer model!"
 
+ollama create selfdiagnosis-detectionizer -f ./selfdiagnosis-detection-modelfile
+echo "🟢 Created selfdiagnosis-detectionizer model!"
+
 # Wait for Ollama process to finish.
 wait $pid

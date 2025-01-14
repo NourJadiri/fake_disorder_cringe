@@ -144,14 +144,20 @@ analyze_sentiment_task = PythonOperator(
     python_callable = analyze_sentiment,
 )
 
+classify_self_diagnosis_and_medication_task = PythonOperator(
+    task_id = 'classify_self_diagnosis_and_medication_task',
+    dag = chadd_dag,
+    python_callable = classify_self_diagnosis_and_medication,
+)
+
 # noinspection PyStatementEffect
 check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
 clean_ingestion_db_task >> clean_staging_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
 # noinspection PyStatementEffect
-fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task >> homogenize_gender_task >> analyze_sentiment_task
+fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task >> homogenize_gender_task >> analyze_sentiment_task >> classify_self_diagnosis_and_medication_task
 
-# sentiment analysis from the posts
+
 
 # fields to keep : Mention of Solutions, Personal_Experience, Self-Diagnosis, Self-Medication, Sentiment, Topic
 # enjoy the data

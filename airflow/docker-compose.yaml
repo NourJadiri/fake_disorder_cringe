@@ -271,6 +271,7 @@ services:
       - ./ollama_entrypoint.sh:/entrypoint.sh
       - ./genderizer-modelfile:/genderizer-modelfile
       - ./sentimentizer-modelfile:/sentimentizer-modelfile
+      - ./selfdiagnosis-detection-modelfile:/selfdiagnosis-detection-modelfile
     restart: always
     pull_policy: always
     tty: true

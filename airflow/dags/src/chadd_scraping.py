@@ -312,3 +312,89 @@ def analyze_sentiment(**context):
     except Exception as e:
         print(f"Error performing bulk update: {e}")
         return "Bulk update failed."
+
+
+def classify_self_diagnosis_and_medication(**context):
+    try:
+        # Connect to MongoDB
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_staging_db']
+        post_collection = db['posts']
+        print("Connected to MongoDB successfully.")
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        return "Failed to connect to MongoDB."
+
+    # Initialize Ollama client
+    try:
+        # Test if Ollama is running
+        requests.get('http://ollama:11434')  # Check Ollama server
+        llama_client = Client(
+            host='http://ollama:11434',
+        )
+        print("Initialized Llama client successfully.")
+    except Exception as e:
+        raise ValueError(f"Error initializing Llama client: {e}")
+
+    # Prepare bulk operations
+    bulk_operations: List[UpdateOne] = []
+    documents = list(post_collection.find())
+
+    for doc in documents:
+        body = doc.get("body")
+        body = body.strip() if body else ""
+        post_id = doc.get("_id")
+
+        if not body:
+            print(f"Document ID {post_id} has empty content. Skipping classification.")
+            continue
+
+        try:
+            # Send the post text to the model
+            response = llama_client.chat(
+                model='selfdiagnosis-detectionizer',  # Replace with your LLaMA model name
+                messages=[
+                    {
+                        "role": "user",
+                        "content": body
+                    }
+                ]
+            )
+
+            # Parse the response
+            classification = response.message.content.strip()
+            print(f"Classification response for Document ID {post_id}: {classification}")
+
+            # Parse JSON response
+            try:
+                classification_data = json.loads(classification)
+                self_diagnosed = classification_data.get("self-diagnosed", "No")
+                self_medicated = classification_data.get("self-medicated", "No")
+            except Exception as e:
+                print(f"Error parsing classification response for Document ID {post_id}: {e}")
+                self_diagnosed, self_medicated = "No", "No"
+
+        except Exception as e:
+            print(f"Error calling Ollama for Document ID {post_id}: {e}. Setting defaults.")
+            self_diagnosed, self_medicated = "No", "No"
+
+        # Prepare the update operation
+        bulk_operations.append(
+            UpdateOne(
+                {"_id": post_id},
+                {"$set": {"self-diagnosed": self_diagnosed, "self-medicated": self_medicated}}
+            )
+        )
+
+    # Execute bulk updates
+    try:
+        if bulk_operations:
+            result = post_collection.bulk_write(bulk_operations)
+            print(f"Bulk update completed. Matched: {result.matched_count}, Modified: {result.modified_count}.")
+            return f"Bulk update completed. Matched: {result.matched_count}, Modified: {result.modified_count}."
+        else:
+            print("No update operations to perform.")
+            return "No updates performed."
+    except Exception as e:
+        print(f"Error performing bulk update: {e}")
+        return "Bulk update failed."
