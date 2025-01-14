@@ -250,6 +250,9 @@ class ChaddScraper:
         if not self.huSessID:
             raise Exception("Please log in first. Execute ChaddScraper.login() first.")
 
+        if not username:
+            raise Exception("Please provide a valid username.")
+
         url = f"{self.base_url}/private/user/profile/{username}"
         response = self.session.get(url)
 

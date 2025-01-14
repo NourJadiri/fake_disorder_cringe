@@ -96,15 +96,15 @@ fetch_posts_task = PythonOperator(
     python_callable=fetch_posts_task,
     trigger_rule='none_failed_min_one_success',
     op_kwargs={
-        'start_date': datetime.datetime.now().strftime('%Y-%m'),
-        'end_date': datetime.datetime.now().strftime('%Y-%m'),
+        'start_date': '2017-07',
+        'end_date': '2025-01',
     }
 )
 
 fetch_members_task = PythonOperator(
     task_id='fetch_members_task',
     dag=chadd_dag,
-    python_callable=fetch_members,
+    python_callable=fetch_members_for_posts,
 )
 
 fill_posts_collection_task = PythonOperator(
@@ -124,9 +124,9 @@ fill_members_collection_task = PythonOperator(
 # noinspection PyStatementEffect
 check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
-clean_ingestion_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
+clean_ingestion_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fill_posts_collection_task
 # noinspection PyStatementEffect
-fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task
+fill_posts_collection_task >> fetch_members_task >> fill_members_collection_task
 
 
 

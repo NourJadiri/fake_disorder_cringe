@@ -69,7 +69,7 @@ def insert_members(members):
     # Use insert_many for bulk insertion, allowing duplicates to be ignored
     try:
         member_collection.insert_many(member_docs, ordered=False)  # Skip duplicates
-        print("Members inserted successfully!")
+        print(f'{len(members)} members inserted successfully!')
     except BulkWriteError as e:
         print(f"Duplicate entries found. Continuing with remaining insertions.")
 
