@@ -295,7 +295,7 @@ networks:
 
 volumes:
   postgres-db-volume:
-  ollama_data:
+  #ollama_data:
   MONGO_DATA:
     name: MONGO_DATA
   redis-db:
