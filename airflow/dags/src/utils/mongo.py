@@ -112,3 +112,15 @@ def insert_members_details(members):
     # Use insert_many for bulk insertion
     member_collection.insert_many(member_docs)
     print("Member details inserted successfully!")
+
+def create_production_db():
+    client = MongoClient('mongo', 27017)
+    db = client['chadd_production_db']
+    post_collection = db['posts']
+    member_collection = db['members']
+
+    # Create a unique index on the post_id field
+    post_collection.create_index('post_id', unique=True)
+    member_collection.create_index('username', unique=True)
+
+    print("Production database created successfully!")

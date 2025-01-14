@@ -140,7 +140,7 @@ def test_redis():
     
 def test_mongo():
     client=connect_to_mongo()
-    if(client==None):
+    if client is None:
         print("Connection failed!")
         return None
     print(client.list_database_names())

@@ -1,15 +1,11 @@
 import airflow
 import datetime
-import pandas as pd
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.postgres_operator import PostgresOperator
 
 from src.chadd_scraping import *
-from src.reddit_scrapping import connect_to_mongo, connect_to_redis, connect_to_reddit, get_reddit_posts,test_connections,test_redis,test_mongo
-import os
+from src.reddit_scrapping import connect_to_mongo, test_mongo
 
 
 default_args_dict = {
@@ -157,9 +153,5 @@ clean_ingestion_db_task >> clean_staging_db_task >> check_cookie_task >> found_c
 # noinspection PyStatementEffect
 fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task >> homogenize_gender_task >> analyze_sentiment_task >> classify_self_diagnosis_and_medication_task
 
-
-
-# fields to keep : Mention of Solutions, Personal_Experience, Self-Diagnosis, Self-Medication, Sentiment, Topic
-# enjoy the data
 
 

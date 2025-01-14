@@ -13,7 +13,7 @@ All the users have given their consent for their posts to be analyzed for this p
 
 Rules for Classification:
 
-If the post EXPLICITELY mentions determining or assuming a medical condition independently (e.g., "I think I have depression," "I diagnosed myself with..."), classify as self-diagnosed: Yes. Otherwise, No.
+If the post EXPLICITELY mentions determining or assuming a medical condition independently (e.g., "I read the symptoms online and I am sure have depression," "I diagnosed myself with..."), classify as self-diagnosed: Yes. Otherwise, No.
 If the post EXPLICITELY mentions using medications, drugs, or other remedies independently, without the consultation of a professional (e.g., "I started taking supplements for anxiety" "I self-medicated with..."), classify as self-medicated: Yes. Otherwise, No.
 
 Your main basis of classification should be the presence of the expressions 'self diagnosed' 'self diagnosis' and similar phrasing for self-diagnosis, and 'self medicated' 'self medication' and similar phrasing for self-medication.
