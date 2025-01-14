@@ -31,7 +31,7 @@ check_mongo_task = PythonOperator(
 
 def branch_on_mango_connection():
     if connect_to_mongo():
-        return 'clean_staging_db'
+        return 'infer_gender_task'
     else:
         return 'stop_task'
 
@@ -39,25 +39,6 @@ branch_mongo_task = BranchPythonOperator(
     task_id='branch_mongo_task',
     dag=chadd_dag,
     python_callable=branch_on_mango_connection,
-)
-
-clean_staging_db_task = PythonOperator(
-    task_id='clean_staging_db',
-    dag=chadd_dag,
-    python_callable=clean_staging_db_func,
-)
-
-fill_posts_collection_task = PythonOperator(
-    task_id='fill_posts_collection_task',
-    dag=chadd_dag,
-    python_callable=fetch_post_details,
-)
-
-
-fill_members_collection_task = PythonOperator(
-    task_id='fill_members_collection_task',
-    dag=chadd_dag,
-    python_callable=fetch_members_details,
 )
 
 stop_task = DummyOperator(
@@ -98,5 +79,5 @@ classify_self_diagnosis_and_medication_task = PythonOperator(
 # analyze sentiment
 # classify self diagnosis and medication
 
-check_mongo_task >> branch_mongo_task >> [clean_staging_db_task, stop_task]
-clean_staging_db_task >> fill_posts_collection_task >> fill_members_collection_task >>infer_gender_task >> homogenize_gender_task >> analyze_sentiment_task >> classify_self_diagnosis_and_medication_task
+check_mongo_task >> branch_mongo_task >> [infer_gender_task, stop_task]
+infer_gender_task >>homogenize_gender_task >> analyze_sentiment_task >> classify_self_diagnosis_and_medication_task

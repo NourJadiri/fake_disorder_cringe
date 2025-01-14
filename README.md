@@ -75,6 +75,9 @@ Questions:
 
 ## Requirements
 
+This project requires will require quite some power from your machine, as it is running two lightweight llms in containers, so make sure you have enough memory and cpu to run the project.
+In case you doubt about your machine capabilities, it is better to run directly the migration script that will populate the databases with some data.
+
 ### 1. Prequirements:
 * Make sure you have docker installed 
 

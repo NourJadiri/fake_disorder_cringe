@@ -261,31 +261,31 @@ services:
       - airflow_network
     depends_on:
       - mongo
-  # ollama:
-  #   image: ollama/ollama
-  #   container_name: ollama
-  #   ports:
-  #     - "11434:11434" # Default port for Ollama
-  #   volumes:
-  #     - ollama_data:/root/.ollama # Persist Ollama data (models, settings)
-  #     - ./ollama_entrypoint.sh:/entrypoint.sh
-  #     - ./genderizer-modelfile:/genderizer-modelfile
-  #     - ./sentimentizer-modelfile:/sentimentizer-modelfile
-  #     - ./selfdiagnosis-detection-modelfile:/selfdiagnosis-detection-modelfile
-  #   restart: always
-  #   pull_policy: always
-  #   tty: true
-  #   environment:
-  #     - OLLAMA_MODEL
-  #   entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
-  #   networks:
-  #     - airflow_network
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             capabilities: [gpu]
+   ollama:
+     image: ollama/ollama
+     container_name: ollama
+     ports:
+       - "11434:11434" # Default port for Ollama
+     volumes:
+       - ollama_data:/root/.ollama # Persist Ollama data (models, settings)
+       - ./ollama_entrypoint.sh:/entrypoint.sh
+       - ./genderizer-modelfile:/genderizer-modelfile
+       - ./sentimentizer-modelfile:/sentimentizer-modelfile
+       - ./selfdiagnosis-detection-modelfile:/selfdiagnosis-detection-modelfile
+     restart: always
+     pull_policy: always
+     tty: true
+     environment:
+       - OLLAMA_MODEL
+     entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
+     networks:
+       - airflow_network
+     deploy:
+       resources:
+         reservations:
+           devices:
+             - driver: nvidia
+               capabilities: [gpu]
 
 networks:
   airflow_network:
@@ -295,7 +295,7 @@ networks:
 
 volumes:
   postgres-db-volume:
-  #ollama_data:
+  ollama_data:
   MONGO_DATA:
     name: MONGO_DATA
   redis-db:
