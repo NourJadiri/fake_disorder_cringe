@@ -286,7 +286,7 @@ def get_year(datetime):
 
 def get_utc_time(timestamp):
     # Convert timestamp to UTC datetime
-    utc_time = datetime.datetime.utcfromtimestamp(timestamp)
+    utc_time = datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     return utc_time
 
 def fix_gender_errors(text):
