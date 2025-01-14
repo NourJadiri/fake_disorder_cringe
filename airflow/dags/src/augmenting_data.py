@@ -317,7 +317,7 @@ def clean_text(text):
 def clean_df(posts_registered_df):
     # fix binary values 
     list_col=['Mention of Solutions', 'Personal_Experience', 'Self-Diagnosis',
-       'Self-Medication', 'Sentiment', 'Topic']
+       'Self-Medication', 'Topic']
     for col in list_col:
         posts_registered_df[col] = posts_registered_df[col].apply(lambda x: 1 if x.lower() == 'yes' else 0)
     # fix Gender values into 'male', 'female' or 'null'
@@ -328,7 +328,7 @@ def clean_df(posts_registered_df):
     
     # keep the necessary columns
     list_col_porduction=['id', 'created_at', 'Gender','Self-Diagnosis',
-       'Self-Medication', 'Sentiment']
+       'Self-Medication','Sentiment','self_text']
     posts_registered_df=posts_registered_df[list_col_porduction]
     
     # add the source 

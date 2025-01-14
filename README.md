@@ -103,9 +103,10 @@ cd airflow
 docker-compose up
 ```
 ### 4. Populate the databases for the offline use
-We will just run some scripts in order to populate the databases (Make sure the docker containers and running !!!)
+In order to populate the databases for offline testing, make sure to run the migration-mongo.sh migration script from the host machine (Make sure the mongo container is running !!!)
 
 ```bash
+cd dags/migration/mongo/
 #migration of mongodb
 sh dags/migration/mongo/migration_mongo.sh
 #migration of redis
@@ -150,6 +151,16 @@ We will be detailling for each source the steps used in order to scrap get data.
 
 ### Health Unlock
 
+1.**Scraping Post IDs**
+we begin by scraping post IDs for the month using requests to the HealthUnlocked API. This allows us to gather the relevant posts for analysis based on specific ADHD-related discussions.
+
+2.**Fetching Post Details and Author Information**
+Next, we fetch the details of each post, including the title, body, and author information. we also collect any available author data, such as demographics, to enrich the dataset for deeper analysis.
+
+3.**Storing in MongoDB**
+Finally, all collected data, including post content, metadata, and author details, is stored in MongoDB for easy querying and efficient processing in subsequent analysis stages.
+
+
 ## Staging phase
 
 ### Reddit
@@ -159,19 +170,22 @@ Once the posts have been ingested into **MongoDB**, the next step involves movin
 
 To analyze Reddit posts and extract key features, we use the **Mistral** LLM through an API call. Mistral helps with tasks like sentiment analysis, keyword extraction, and other valuable insights to enrich the dataset.
 
-2.**Struggles in Automating LLM Analysis**
-
-One key challenge in automating Reddit post analysis with an LLM, like Mistral, is ensuring the output is consistently structured for seamless integration into the data pipeline. Improving the prompting strategy is vital to align the model's responses with the desired format, simplifying parsing and feature extraction.
-
-
-3.**Cleaning Augemented data**
+2.**Cleaning Augemented data**
 
 After receiving analysis results from Mistral, the system formats and stores the augmented data in the staging database, with Pandas used for cleaning and ensuring consistency. Due to variability in the LLM’s output, additional adjustments may be required, such as:
 
 Parsing the model output: Cleaning the response to match the database structure.
 Handling inconsistent responses: Adjusting missing labels or misinterpreted keywords through post-processing.
 
-### Unlock Health 
+### Unlock Health:
+
+* In the staging phase, several data processing tasks are carried out using LLM (Large Language Model) agents:
+
+-**Gender Inference from Biography:** We use LLM agents to analyze the user biography and infer their gender, providing additional demographic context to the dataset.
+
+-**Sentiment Analysis:** LLM agents perform sentiment analysis on posts to classify their emotional tone (positive, negative, neutral), adding valuable insights for further analysis.
+
+-**Self-Diagnosis / Self-Medication Detection:** LLM agents are employed to identify mentions of self-diagnosis or self-medication, helping to highlight key concerns regarding ADHD treatment.
 
 
 ### Production phase
