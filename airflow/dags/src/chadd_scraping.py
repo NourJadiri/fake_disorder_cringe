@@ -53,10 +53,13 @@ def load_scraper_from_cookies(**context):
 def fetch_posts_task(**context):
     # Get the cookies from XCom
     scraper = ChaddScraper.from_config(CONFIG_FILE)
-
     # Fetch posts
-    post_ids = scraper.get_posts_ids(start_date='2021-01', end_date='2021-02', community='adult-adhd')
+    post_ids = scraper.get_posts_ids(start_date=context['start_date'], end_date=context['end_date'], community='adult-adhd')
     insert_post_ids(post_ids)
+
+def fetch_members_for_posts(**context):
+    pass
+
 
 def fetch_members(**context):
     # Get the cookies from XCom

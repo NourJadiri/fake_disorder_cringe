@@ -194,6 +194,7 @@ class ChaddScraper:
             next_month = current_date.replace(day=28) + timedelta(days=4)
             current_date = next_month.replace(day=1)
 
+        print(f"Total posts fetched: {len(posts_ids)}")
         return posts_ids
 
     def get_post_details(self, post_id, community = 'adult-adhd') -> Post:

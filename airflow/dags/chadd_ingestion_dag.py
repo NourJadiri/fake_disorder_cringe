@@ -95,6 +95,10 @@ fetch_posts_task = PythonOperator(
     dag=chadd_dag,
     python_callable=fetch_posts_task,
     trigger_rule='none_failed_min_one_success',
+    op_kwargs={
+        'start_date': datetime.datetime.now().strftime('%Y-%m'),
+        'end_date': datetime.datetime.now().strftime('%Y-%m'),
+    }
 )
 
 fetch_members_task = PythonOperator(

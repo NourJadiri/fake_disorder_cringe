@@ -50,9 +50,12 @@ def insert_post_ids(post_ids):
     # Prepare the documents for bulk insertion
     post_docs = [{'post_id': post_id} for post_id in post_ids]
 
+    try:
     # Use insert_many for bulk insertion
-    post_collection.insert_many(post_docs)
-    print("Post IDs inserted successfully!")
+        post_collection.insert_many(post_docs, ordered=False)  # Skip duplicates
+        print("Post IDs inserted successfully!")
+    except BulkWriteError as e:
+        print(f"Duplicate entries found. Continuing with remaining insertions.")
 
 def insert_members(members):
     client = MongoClient('mongo', 27017)
