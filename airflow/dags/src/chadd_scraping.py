@@ -58,10 +58,23 @@ def fetch_posts_task(**context):
     insert_post_ids(post_ids)
 
 def fetch_members_for_posts(**context):
-    pass
+    try:
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_staging_db']
+        post_collection = db['posts']
+        print("Connected to MongoDB successfully.")
+    except Exception as e:
+        raise ValueError(f"Error connecting to MongoDB: {e}")
+
+    # for each post, fetch the member information, and insert it in the staging collection
+    posts = list(post_collection.find())
+    members = []
+    for post in posts:
+        members.append(post['author']['username'])
+    insert_members(members)
 
 
-def fetch_members(**context):
+def fetch_members_for_all_posts(**context):
     # Get the cookies from XCom
     scraper = ChaddScraper.from_config(CONFIG_FILE)
 
@@ -82,6 +95,7 @@ def fetch_post_details(**context):
     post_ids = get_post_ids()
     posts = []
     for post_id in post_ids:
+        print('Fetching details for:', post_id)
         post = scraper.get_post_details(post_id)
         posts.append(post)
 
@@ -98,9 +112,12 @@ def fetch_members_details(**context):
     usernames = get_members_usernames()
     members = []
     for username in usernames:
-        print('Fetching details for:', username)
-        member = scraper.get_user_details(username)
-        members.append(member)
+        try:
+            print('Fetching details for:', username)
+            member = scraper.get_user_details(username)
+            members.append(member)
+        except Exception as e:
+            print(f"Error fetching details for {username}: {e}")
 
     insert_members_details(members)
 
