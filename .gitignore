@@ -9,7 +9,5 @@ airflow/dags/error_logs
 src/Llama-3.2-1B/
 ./Llama-3.2-1B/
 adhdvenv/
-src/mistrale/saved_model
-src/fine_tuned_llama/
-src/tmp_trainer
+src/
 # envi

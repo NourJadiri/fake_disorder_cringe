@@ -51,7 +51,9 @@ with DAG(
     
     migrate_mongodb = BashOperator(
         task_id='migrate_mongodb',
-        bash_command="sh /opt/airflow/dags/migration/mongo/migrate_mongo.sh"
+        bash_command="""
+        sh /opt/airflow/dags/migration/mongo/migration_mongo.sh
+        """
     )
 
     migrate_mongodb 
