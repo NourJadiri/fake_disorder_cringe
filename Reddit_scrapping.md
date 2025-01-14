@@ -25,7 +25,6 @@ All tasks involved in data collection and processing are automated using **Apach
    - **Post Author**: The author of the Reddit post.
    - **Timestamp**: The timestamp when the post was created.
    - **Keywords**: The keyword used in the search that led to the retrieval of the post.
- 
 
 ## 2. **Data Augmentation and Enrichment**
 
@@ -44,7 +43,6 @@ One of the key challenges encountered when automating the analysis of Reddit pos
 In particular, improving the **prompting strategy** is crucial for ensuring that the LLM’s output aligns with the desired structure for data augmentation. The goal is to refine the prompt given to the model so that the response is in a structured, consistent format, making it easier to parse and extract useful features.
 
 For instance, when asking the model to perform sentiment analysis, a well-structured prompt may look like:
-
 
 The challenge is ensuring that the LLM responds in the correct format, where each feature is clearly identified and no extraneous text is included. If the LLM’s response is not in the desired format, manual intervention or additional parsing steps may be required to process the data.
 
