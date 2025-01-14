@@ -2,7 +2,7 @@
 
 # filepath: /home/ysidhom/Documents/5IF/adhd_project/mental_health_disorders_analysis/airflow/dags/migration/mongo/migration_mongo.sh
 
-BSON_BACKUP_FILE_PATH="./backup/" # Path to BSON backup file inside the container
+BSON_BACKUP_FILE_PATH="./backup" # Path to BSON backup file inside the container
 TARGET_DBS="Ingestion_db" # Array of target database names
 MONGO_CONTAINER_NAME="mongo"     # MongoDB container name
 
@@ -16,7 +16,7 @@ echo "Starting MongoDB restore process for databases: ${TARGET_DBS}"
 
 # Step 1: Copy BSON backup file to MongoDB container
 echo "Copying BSON backup file to MongoDB container..."
-docker cp "$BSON_BACKUP_FILE_PATH" "$MONGO_CONTAINER_NAME:/tmp/backup"
+docker cp "$BSON_BACKUP_FILE_PATH" "$MONGO_CONTAINER_NAME:/tmp"
 
 if [ $? -ne 0 ]; then
   echo "Error: Failed to copy BSON file to MongoDB container!"
