@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 import praw
 import redis
 from pymongo import MongoClient, errors
-
+import re
+import datetime
 import pandas as pd
 import datetime
 import requests
@@ -240,5 +241,104 @@ def get_mistral_response(prompt):
         print(f"Error: {response.status_code}, {response.text}")
 
 
-# __name__ = '__main__'
-# augment_documents(2)x
+#---------------Functions related to cleanning the data after LLM-------------------#
+
+
+#----main functions----#
+
+def clean_data(limit):
+    print('starting cleanning data ')
+    client = connect_to_mongo()
+    if client is None:
+        print("Error connecting to MongoDB")
+        return False
+    db_staging=client['Staging_db']
+    db_production=client['Production_db']
+    
+    # get the posts that are not cleaned yet
+    documents=db_staging.reddit_llm.find({'augmented': 0}, {'_id': 0}).limit(limit)
+    documents_df=pd.DataFrame(list(documents))
+    
+    # start clean the data
+    documents_df=clean_df(documents_df)
+    
+    #now the data is cleaned so it will be stored in the production db
+    db_production.reddit_llm.insert_many(documents_df.to_dict('records'))
+    
+    #update the staging db
+    ids=documents_df['id'].tolist()
+    for el in ids:
+        db_staging.reddit_llm.update_one({'id': el}, {'$set': {'augmented': 1}})
+    
+    print('data cleaned and stored in the production db')    
+   
+
+
+
+#----helper functions----#
+
+
+def get_month(datetime):
+    return datetime.month
+
+def get_year(datetime):
+    return datetime.year
+
+def get_utc_time(timestamp):
+    # Convert timestamp to UTC datetime
+    utc_time = datetime.datetime.utcfromtimestamp(timestamp)
+    return utc_time
+
+def fix_gender_errors(text):
+    text=clean_text(text)
+    text=text.lower()
+    
+    if text.startswith('male'):
+        return 'male'
+    elif text.startswith('female'):
+        return 'female'
+    elif text in ['nonbinary']:
+        return 'non-binary'
+    else:
+        return 'null'
+    
+    
+
+def clean_text(text):
+    # Remove punctuation and additional spaces
+    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+    text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
+    return text.strip()  # Remove leading and trailing spaces
+
+
+
+
+
+def clean_df(posts_registered_df):
+    # fix binary values 
+    list_col=['Mention of Solutions', 'Personal_Experience', 'Self-Diagnosis',
+       'Self-Medication', 'Sentiment', 'Topic']
+    for col in list_col:
+        posts_registered_df[col] = posts_registered_df[col].apply(lambda x: 1 if x.lower() == 'yes' else 0)
+    # fix Gender values into 'male', 'female' or 'null'
+    posts_registered_df['Gender'] = posts_registered_df['Gender'].apply(fix_gender_errors)
+    
+    # fix the date format
+    posts_registered_df['created_at']=posts_registered_df['created_at'].apply(get_utc_time)
+    
+    # keep the necessary columns
+    list_col_porduction=['id', 'created_at', 'Gender','Self-Diagnosis',
+       'Self-Medication', 'Sentiment']
+    posts_registered_df=posts_registered_df[list_col_porduction]
+    
+    # add the source 
+    posts_registered_df['Source']='Reddit'
+    
+    return posts_registered_df
+
+
+    
+
+
+    
+    

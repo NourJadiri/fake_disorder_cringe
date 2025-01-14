@@ -4,7 +4,7 @@
 # Environment files
 .env
 airflow/.env
-
+airflow/dags/error_logs
 # Llama directory and its contents
 src/Llama-3.2-1B/
 ./Llama-3.2-1B/
