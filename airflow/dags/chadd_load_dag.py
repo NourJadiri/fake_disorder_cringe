@@ -36,6 +36,12 @@ check_mongo_task = PythonOperator(
     python_callable=test_mongo,
 )
 
+clean_prod_db_task = PythonOperator(
+    task_id='clean_ingestion_db',
+    dag=chadd_dag,
+    python_callable=clean_prod_db,
+)
+
 create_production_db_task = PythonOperator(
     task_id='create_production_db',
     dag=chadd_dag,
@@ -73,7 +79,7 @@ stop_task = PythonOperator(
     python_callable=lambda: print("Stopping the DAG."),
 )
 
-check_mongo_task >> branch_staging_db_task >> [create_production_db_task, stop_task]
+check_mongo_task >> clean_prod_db_task >> branch_staging_db_task >> [create_production_db_task, stop_task]
 create_production_db_task >> load_members_to_prod_db_task >> load_posts_to_prod_db_task
 
 

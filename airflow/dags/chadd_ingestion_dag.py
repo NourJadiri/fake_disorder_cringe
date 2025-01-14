@@ -16,7 +16,7 @@ default_args_dict = {
 }
 
 chadd_dag = DAG(
-    dag_id='chadd_dag',
+    dag_id='chadd_ingestion_dag',
     default_args=default_args_dict,
     catchup=False,
 )
@@ -47,12 +47,6 @@ clean_ingestion_db_task = PythonOperator(
     task_id='clean_ingestion_db',
     dag=chadd_dag,
     python_callable=clean_ingestion_db_func,
-)
-
-clean_staging_db_task = PythonOperator(
-    task_id='clean_staging_db',
-    dag=chadd_dag,
-    python_callable=clean_staging_db_func,
 )
 
 # Branch task based on MongoDB connection
@@ -122,36 +116,13 @@ fill_members_collection_task = PythonOperator(
     python_callable=fetch_members_details,
 )
 
-infer_gender_task = PythonOperator(
-    task_id='infer_gender_task',
-    dag=chadd_dag,
-    python_callable=infer_gender_from_bio,
-)
-
-homogenize_gender_task = PythonOperator(
-    task_id = 'homogenize_gender_task',
-    dag = chadd_dag,
-    python_callable = homogenize_gender,
-)
-
-analyze_sentiment_task = PythonOperator(
-    task_id = 'analyze_sentiment_task',
-    dag = chadd_dag,
-    python_callable = analyze_sentiment,
-)
-
-classify_self_diagnosis_and_medication_task = PythonOperator(
-    task_id = 'classify_self_diagnosis_and_medication_task',
-    dag = chadd_dag,
-    python_callable = classify_self_diagnosis_and_medication,
-)
 
 # noinspection PyStatementEffect
 check_mongo_task >> branch_mongo_task >> [clean_ingestion_db_task, stop_task]
 # noinspection PyStatementEffect
-clean_ingestion_db_task >> clean_staging_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
+clean_ingestion_db_task >> check_cookie_task >> found_cookies >> [load_scraper_from_cookies, init_scraper_task] >> fetch_posts_task >> fetch_members_task
 # noinspection PyStatementEffect
-fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task >> infer_gender_task >> homogenize_gender_task >> analyze_sentiment_task >> classify_self_diagnosis_and_medication_task
+fetch_members_task >> fill_posts_collection_task >> fill_members_collection_task
 
 
 

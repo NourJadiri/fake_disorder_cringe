@@ -74,10 +74,21 @@ def load_members_to_prod_db():
 
         if members_count > 0:
             members = members_collection.find({})
-            prod_members_collection.insert_many(members)
+            prod_members_collection.insert_many(members, ordered=False)
             print(f"{members_count} members migrated successfully.")
         else:
             print("No members found in the staging database.")
 
     except Exception as e:
         print(f"Error during migration: {e}")
+
+
+def clean_prod_db():
+    try:
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_production_db']
+        db.drop_collection('posts')
+        db.drop_collection('members')
+        print("Production database cleaned successfully.")
+    except Exception as e:
+        print(f"Error cleaning production database: {e}")

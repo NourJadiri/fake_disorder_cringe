@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 
 
 def connect_to_mongo():
@@ -57,13 +58,17 @@ def insert_members(members):
     client = MongoClient('mongo', 27017)
     db = client['chadd_ingestion_db']
     member_collection = db['members']
+    member_collection.create_index('username', unique=True)
 
     # Prepare the documents for bulk insertion
     member_docs = [{'username': member} for member in members]
 
-    # Use insert_many for bulk insertion
-    member_collection.insert_many(member_docs)
-    print("Members inserted successfully!")
+    # Use insert_many for bulk insertion, allowing duplicates to be ignored
+    try:
+        member_collection.insert_many(member_docs, ordered=False)  # Skip duplicates
+        print("Members inserted successfully!")
+    except BulkWriteError as e:
+        print(f"Duplicate entries found. Continuing with remaining insertions.")
 
 def get_post_ids():
     client = MongoClient('mongo', 27017)
@@ -110,7 +115,7 @@ def insert_members_details(members):
     member_docs = [member.to_dict() for member in members]
 
     # Use insert_many for bulk insertion
-    member_collection.insert_many(member_docs)
+    member_collection.insert_many(member_docs, ordered=False)
     print("Member details inserted successfully!")
 
 def create_production_db():
