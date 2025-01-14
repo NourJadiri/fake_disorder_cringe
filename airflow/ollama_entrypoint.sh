@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Start Ollama in the background.
+
 /bin/ollama serve &
 # Record Process ID.
 pid=$!
-
 # Pause for Ollama to start.
 sleep 5
 
