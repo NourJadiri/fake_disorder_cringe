@@ -31,7 +31,7 @@ def load_posts_to_prod_db():
 
     try:
         # Connect to the production database
-        prod_db = client['chadd_production_db']
+        prod_db = client['Production_db']
         prod_post_collection = prod_db['posts']
 
 
@@ -78,7 +78,7 @@ def load_members_to_prod_db():
 
     try:
         # Connect to the production database
-        prod_db = client['chadd_production_db']
+        prod_db = client['Production_db']
         prod_members_collection = prod_db['members']
 
         members_count = members_collection.count_documents({})

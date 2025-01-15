@@ -123,12 +123,9 @@ def insert_members_details(members):
 
 def create_production_db():
     client = MongoClient('mongo', 27017)
-    db = client['chadd_production_db']
+    db = client['Production_db']
     post_collection = db['posts']
+    post_collection.create_index(['id', 'Source'], unique=True)
     member_collection = db['members']
-
-    # Create a unique index on the post_id field
-    post_collection.create_index('id', unique=True)
-    member_collection.create_index('username', unique=True)
 
     print("Production database created successfully!")
