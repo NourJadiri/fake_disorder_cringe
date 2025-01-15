@@ -263,7 +263,7 @@ def clean_data(limit):
     documents_df=clean_df(documents_df)
     
     #now the data is cleaned so it will be stored in the production db
-    db_production.reddit_llm.insert_many(documents_df.to_dict('records'))
+    db_production.posts.insert_many(documents_df.to_dict('records'))
     
     #update the staging db
     ids=documents_df['id'].tolist()
@@ -278,6 +278,8 @@ def clean_data(limit):
 #----helper functions----#
 
 
+import datetime
+import re
 def get_month(datetime):
     return datetime.month
 
@@ -286,7 +288,7 @@ def get_year(datetime):
 
 def get_utc_time(timestamp):
     # Convert timestamp to UTC datetime
-    utc_time = datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    utc_time = datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M:%S')
     return utc_time
 
 def fix_gender_errors(text):
@@ -300,7 +302,7 @@ def fix_gender_errors(text):
     elif text in ['nonbinary']:
         return 'non-binary'
     else:
-        return 'null'
+        return 'unknown'
     
     
 
@@ -328,11 +330,17 @@ def clean_df(posts_registered_df):
     
     # keep the necessary columns
     list_col_porduction=['id', 'created_at', 'Gender','Self-Diagnosis',
-       'Self-Medication','Sentiment','self_text']
+       'Self-Medication','Sentiment','self_text','author']
+    
     posts_registered_df=posts_registered_df[list_col_porduction]
+    posts_registered_df.rename(columns={'self_text':'Text'}, inplace=True)
+    posts_registered_df['Sentiment'] = posts_registered_df['Sentiment'].apply(lambda x: x.lower())
+    
+    posts_registered_df.rename(columns={'author':'Author'}, inplace=True)
+    posts_registered_df['Author'] = 'u/' + posts_registered_df['Author']
     
     # add the source 
-    posts_registered_df['Source']='Reddit'
+    posts_registered_df['Source'] = 'Reddit'
     
     return posts_registered_df
 
