@@ -87,7 +87,7 @@ In case you doubt about your machine capabilities, it is better to run directly 
 Start by cloning the repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/project-name.git
+git clone https://https://github.com/NourJadiri/mental_health_disorders_analysis
 ```
 ### 3. Initiate the docker containers
 Once the git cloned just go to the airflow directory and run docker compose up
@@ -104,13 +104,27 @@ docker-compose up
 ```
 ### 4. Populate the databases for the offline use
 In order to populate the databases for offline testing, make sure to run the migration-mongo.sh migration script from the host machine (Make sure the mongo container is running !!!)
-
+This script with populate all the databases (Ingestion - Staging - Production).
 ```bash
 cd dags/migration/mongo/
 #migration of mongodb
 sh dags/migration/mongo/migration_mongo.sh
 #migration of redis
 sh dags/migration/redis/migration_redis.sh
+```
+
+In case there is a need to run the migration for a specific database, you can run the following commands individually :
+```bash
+cd dags/migration/mongo/
+
+# migration of ingestion_dbs
+sh dags/migration/mongo/migration_ingestion_dbs.sh
+
+# migration of staging_dbs
+sh dags/migration/mongo/migration_staging_dbs.sh
+
+# migration of production_db
+sh dags/migration/mongo/migration_prod_db.sh
 ```
 
 → Now everything should be running
@@ -147,17 +161,28 @@ We will be detailling for each source the steps used in order to scrap get data.
 
 </details>
 
+### HealthUnlocked
+
+1. **Scraping Post IDs**
+
+We begin by scraping post IDs for the month using requests to the HealthUnlocked API. This allows us to gather the relevant posts for analysis based on specific ADHD-related discussions.
+
+  * **Rate Limit Management:**
+  The API is designed for private use and has rate limits that can restrict the number of requests sent in a given time frame. To handle this, our pipeline implements session rotation. After sending a predefined batch of requests (e.g., 50 or 100), the active session is replaced with a new one, using a fresh set of cookies or headers. This ensures that the pipeline operates seamlessly without triggering API limits or bans. Additionally, dynamic backoff strategies are employed to adapt to changes in API behavior, reducing the risk of disruptions.
+  
+  
+  * **API Access Details:**
+  Despite being a private API, the HealthUnlocked API is relatively open in its design:
+  It only requires a single cookie for authentication, which can be obtained through initial browser sessions or automated tools.
+  The absence of a CORS (Cross-Origin Resource Sharing) policy means requests can be made from any IP address, removing restrictions on origin domains. This makes the pipeline more flexible and easier to deploy across different machines or environments, such as cloud-based systems.
 
 
-### Health Unlock
+2. **Fetching Post Details and Author Information**
 
-1.**Scraping Post IDs**
-we begin by scraping post IDs for the month using requests to the HealthUnlocked API. This allows us to gather the relevant posts for analysis based on specific ADHD-related discussions.
-
-2.**Fetching Post Details and Author Information**
 Next, we fetch the details of each post, including the title, body, and author information. we also collect any available author data, such as demographics, to enrich the dataset for deeper analysis.
 
-3.**Storing in MongoDB**
+3. **Storing in MongoDB**
+
 Finally, all collected data, including post content, metadata, and author details, is stored in MongoDB for easy querying and efficient processing in subsequent analysis stages.
 
 
@@ -166,30 +191,55 @@ Finally, all collected data, including post content, metadata, and author detail
 ### Reddit
 Once the posts have been ingested into **MongoDB**, the next step involves moving the data into a **staging database** for augmentation. In this step, the text of the posts is passed to a **Large Language Model (LLM)**, such as **Mistral**, via an **API call** for further analysis and feature extraction. This allows us to enrich the collected data with additional insights that are valuable for analysis.
 
- 1.**Using Mistral for Data Augmentation**
+1. **Using Mistral for Data Augmentation**
 
 To analyze Reddit posts and extract key features, we use the **Mistral** LLM through an API call. Mistral helps with tasks like sentiment analysis, keyword extraction, and other valuable insights to enrich the dataset.
 
-2.**Cleaning Augemented data**
+2. **Cleaning Augemented data**
 
 After receiving analysis results from Mistral, the system formats and stores the augmented data in the staging database, with Pandas used for cleaning and ensuring consistency. Due to variability in the LLM’s output, additional adjustments may be required, such as:
 
 Parsing the model output: Cleaning the response to match the database structure.
 Handling inconsistent responses: Adjusting missing labels or misinterpreted keywords through post-processing.
 
-### Unlock Health:
+### HealthUnlocked:
 
-* In the staging phase, several data processing tasks are carried out using LLM (Large Language Model) agents:
+In the staging phase, several data processing tasks are carried out to enrich the dataset using LLM (Large Language Model) agents. These models help extract and augment the raw data obtained from the ingestion phase, providing valuable insights that enhance the subsequent analysis. We implemented a setup leveraging three distinct Ollama 1B LLMs, each tailored to perform a specific task:
 
--**Gender Inference from Biography:** We use LLM agents to analyze the user biography and infer their gender, providing additional demographic context to the dataset.
+1. **Gender Inference from Biography:**
 
--**Sentiment Analysis:** LLM agents perform sentiment analysis on posts to classify their emotional tone (positive, negative, neutral), adding valuable insights for further analysis.
+A dedicated LLM agent is employed to infer gender information based on user biographies.
 
--**Self-Diagnosis / Self-Medication Detection:** LLM agents are employed to identify mentions of self-diagnosis or self-medication, helping to highlight key concerns regarding ADHD treatment.
+Extensive prompt engineering was conducted to fine-tune the model and mitigate biases. For example, during early trials, the model incorrectly classified users with gaming-related keywords as male, regardless of other context. This issue was addressed by incorporating nuanced examples into the prompt and refining the input structure.
+
+This process enriches the dataset with demographic information, allowing for more granular analysis.
+
+2. **Sentiment Analysis:**
+
+A second LLM agent classifies the emotional tone of each post into three categories: positive, negative, or neutral.
+This helps provide insights into the emotional context of discussions surrounding ADHD, revealing potential patterns of user sentiment over time or across regions.
+
+3. **Self-Diagnosis and Self-Medication Detection:**
+
+A third LLM agent detects mentions of self-diagnosis or self-medication in posts, highlighting key concerns related to ADHD management and user behavior.
+By analyzing these mentions, the dataset is enriched with indicators of potential trends, such as the increasing prevalence of self-diagnosis narratives on social media.
+
+    Note: The staging pipeline for `chadd` is computationally intensive (LLM agents are run locally) and can be quite slow due to the nature of the API queries, duplicate checks, and data processing steps. 
+    For testing purposes, it is recommended to run the migration script instead, as it populates the databases with preprocessed data much faster.
 
 
+**Why Use Multiple LLMs?**
+
+Each LLM is optimized for a specific task, ensuring high accuracy and minimizing cross-task interference.
+This modular approach allows for easier debugging and scalability, as improvements in one LLM do not affect the others.
+
+4. **Challenges and Mitigations:**
+
+* **Biases in Predictions:** Heavy prompt engineering and iterative testing were necessary to reduce biases in tasks like gender inference.
+* **Model Output Variability:** Additional post-processing steps using Pandas were applied to handle inconsistent outputs and ensure data alignment with the database schema.
 ### Production phase
 
-Once all the data cleaned it is transfered to the prodcution_db ready for analysis
+Once all the data cleaned it is transfered to the prodcution_db ready for analysis.
+The main work done here is to have a common db schema that will serve later for visualisation purposes.
 
 
