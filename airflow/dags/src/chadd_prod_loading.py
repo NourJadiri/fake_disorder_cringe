@@ -23,6 +23,7 @@ def load_posts_to_prod_db():
         client = MongoClient('mongo', 27017)
         db = client['chadd_staging_db']
         post_collection = db['posts']
+        members_collection = db['members']
         print("Connected to MongoDB successfully.")
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
@@ -33,27 +34,36 @@ def load_posts_to_prod_db():
         prod_db = client['chadd_production_db']
         prod_post_collection = prod_db['posts']
 
+
         # Migrate and modify posts
-        posts = post_collection.find({}, {
-            'post_id': 1, 'title': 1, 'body': 1, 'author': 1,
-            'date_created': 1, 'total_responses': 1, 'responses': 1,
-            'sentiment': 1, 'self-diagnosed': 1, 'self-medicated': 1
-        })
+        posts = post_collection.find({})
 
         modified_posts = []
         for post in posts:
-            post['source'] = 'chadd'  # Add the new field
-            modified_posts.append(post)
+            author = members_collection.find_one({'author_id': post['author']['author_id']})
+            modified_post = {
+                'id': post['post_id'],
+                'created_at': post['date_created'],
+                'Gender': author['gender'],
+                'Self-Diagnosis': post['self-diagnosed'],
+                'Self-Medication': post['self-medicated'],
+                'Sentiment': post['sentiment'],
+                'Source': 'HealthUnlocked',
+            }
+            modified_posts.append(modified_post)
 
         if modified_posts:
-            prod_post_collection.insert_many(modified_posts)
-        print(f"{len(modified_posts)} posts migrated successfully.")
+            try:
+                prod_post_collection.insert_many(modified_posts, ordered=False)
+            except Exception as e:
+                print(f"Error during migration: {e}")
 
-        return "Migration completed successfully."
+        print(f"{len(modified_posts)} posts migrated successfully.")
     except Exception as e:
         print(f"Error during migration: {e}")
-        return "Migration failed."
 
+
+## TODO : Adapt the schema to youssef's migration
 def load_members_to_prod_db():
     try:
         client = MongoClient('mongo', 27017)

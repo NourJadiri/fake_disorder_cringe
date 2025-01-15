@@ -46,6 +46,12 @@ stop_task = DummyOperator(
     dag=chadd_dag,
 )
 
+eliminate_chadd_user_from_db = PythonOperator(
+    task_id='eliminate_chadd_user_from_db',
+    dag=chadd_dag,
+    python_callable=eliminate_hidden_users_from_db,
+)
+
 infer_gender_task = PythonOperator(
     task_id='infer_gender_task',
     dag=chadd_dag,

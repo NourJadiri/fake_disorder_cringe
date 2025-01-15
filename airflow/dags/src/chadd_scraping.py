@@ -418,3 +418,17 @@ def classify_self_diagnosis_and_medication(**context):
     except Exception as e:
         print(f"Error performing bulk update: {e}")
         return "Bulk update failed."
+
+def eliminate_hidden_users_from_db(**context):
+    try:
+        client = MongoClient('mongo', 27017)
+        db = client['chadd_staging_db']
+        members_collection = db['members']
+        print("Connected to MongoDB successfully.")
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
+        return "Failed to connect to MongoDB."
+
+    # Define the query to find documents with
+    members_collection.delete_many({"username": "Hidden"})
+
