@@ -100,7 +100,7 @@ def augment_documents(limit):
     df=pd.DataFrame(log_errors)
     print(df)
     print("Current working directory:", os.getcwd())
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.datetime.now().isoformat()
     day=datetime.datetime.now().strftime("%Y%m%d")
     # Create the directory if it doesn't exist
     os.makedirs(f'/opt/airflow/dags/error_logs/{day}', exist_ok=True)
