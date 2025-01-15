@@ -45,8 +45,8 @@ def load_posts_to_prod_db():
                 'id': post['post_id'],
                 'created_at': post['date_created'],
                 'Gender': author['gender'],
-                'Self-Diagnosis': post['self-diagnosed'],
-                'Self-Medication': post['self-medicated'],
+                'Self-Diagnosis': 1 if post['self-diagnosed'] == 'Yes' else 0,
+                'Self-Medication': 1 if post['self-medicated'] == 'Yes' else 0,
                 'Sentiment': post['sentiment'],
                 'Source': 'HealthUnlocked',
             }
