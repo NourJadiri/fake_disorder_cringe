@@ -16,7 +16,25 @@ A major focus is to compare the rates of self-diagnosis with formal diagnoses.
 
 The datasets for this project include:
 
-* Social media posts from Reddit, and HealthUnlocked (these posts will be scrapped)
+* **Posts from Reddit** : Reddit is a social media platform and online community where users can share, discuss, and vote on content in the form of posts, links, images, and videos. Organized into thousands of user-created forums called "subreddits," each dedicated to specific topics or interests, Reddit fosters diverse discussions on everything from news and technology to niche hobbies and personal experiences. Content is ranked based on user upvotes and downvotes, and its open, anonymous format encourages both knowledge sharing and community engagement.
+
+
+
+
+
+
+
+* **Posts from HealthUnlocked** : HealthUnlocked is a global online health community platform that connects individuals with shared health concerns, enabling them to seek advice, share experiences, and access relevant resources. It operates through condition-specific forums or communities where users can discuss topics ranging from chronic illnesses to mental health conditions.
+
+  Key features include:
+  
+  * Community-Based Support: Users can join specific communities tailored to their health conditions (e.g., ADHD, diabetes, cancer) and interact with others facing similar challenges.
+  Resource Sharing: Members and moderators often share valuable resources, including articles, research findings, and links to professional advice.
+  * Collaboration with Healthcare Organizations: HealthUnlocked partners with healthcare organizations, charities, and patient advocacy groups to provide credible information and moderate discussions.
+  * Anonymous Interaction: Users can participate anonymously, fostering open and honest communication without fear of stigma.
+  For this project, HealthUnlocked was used exclusively to study discussions about ADHD within the Adult ADHD community. This community focuses on the experiences, challenges, and treatment options for adults living with ADHD. Data collected from this source provided insights into demographics, sentiment trends, and key topics such as self-diagnosis and self-medication, contributing to a deeper understanding of how ADHD is perceived and discussed online.
+
+
 
 ## Queries
 
@@ -76,6 +94,9 @@ Questions:
 ## Requirements
 
 This project requires will require quite some power from your machine, as it is running two lightweight llms in containers, so make sure you have enough memory and cpu to run the project.
+
+Local models have been run in two distinct configuration, one with an AMD Ryzen 7 CPU, and a second one with an Intel Core 9 Ultra with GPU acceleration **(Nvidia RTX 4070)**
+
 In case you doubt about your machine capabilities, it is better to run directly the migration script that will populate the databases with some data.
 
 ### 1. Prequirements:
