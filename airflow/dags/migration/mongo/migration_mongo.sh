@@ -32,6 +32,10 @@ echo "Restoring database: Staging_db from BSON file..."
 docker exec -i "$MONGO_CONTAINER_NAME" mongorestore --db Staging_db /tmp/backup/Staging_db
 echo "Restoring database: Production_db from BSON file..."
 docker exec -i "$MONGO_CONTAINER_NAME" mongorestore --db Production_db /tmp/backup/Production_db
+echo  "Restoring database: chadd_ingestion_db from BSON file..."
+docker exec -i "$MONGO_CONTAINER_NAME" mongorestore --db chadd_ingestion_db /tmp/backup/chadd_ingestion_db
+echo "Restoring database: chadd_staging_db from BSON file..."
+docker exec -i "$MONGO_CONTAINER_NAME" mongorestore --db chadd_staging_db /tmp/backup/chadd_staging_db
 
 
 

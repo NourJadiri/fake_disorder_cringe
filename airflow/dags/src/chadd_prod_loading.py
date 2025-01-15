@@ -31,7 +31,7 @@ def load_posts_to_prod_db():
 
     try:
         # Connect to the production database
-        prod_db = client['chadd_production_db']
+        prod_db = client['Production_db']
         prod_post_collection = prod_db['posts']
 
 
@@ -41,13 +41,16 @@ def load_posts_to_prod_db():
         modified_posts = []
         for post in posts:
             author = members_collection.find_one({'author_id': post['author']['author_id']})
+            author_username = f'ch/{author["username"]}'
             modified_post = {
                 'id': post['post_id'],
                 'created_at': post['date_created'],
+                'Author': author_username,
                 'Gender': author['gender'],
                 'Self-Diagnosis': 1 if post['self-diagnosed'] == 'Yes' else 0,
                 'Self-Medication': 1 if post['self-medicated'] == 'Yes' else 0,
                 'Sentiment': post['sentiment'],
+                'Text': post['body'],
                 'Source': 'HealthUnlocked',
             }
             modified_posts.append(modified_post)
@@ -63,7 +66,6 @@ def load_posts_to_prod_db():
         print(f"Error during migration: {e}")
 
 
-## TODO : Adapt the schema to youssef's migration
 def load_members_to_prod_db():
     try:
         client = MongoClient('mongo', 27017)
@@ -76,7 +78,7 @@ def load_members_to_prod_db():
 
     try:
         # Connect to the production database
-        prod_db = client['chadd_production_db']
+        prod_db = client['Production_db']
         prod_members_collection = prod_db['members']
 
         members_count = members_collection.count_documents({})
